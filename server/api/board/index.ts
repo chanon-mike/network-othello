@@ -1,4 +1,3 @@
-import type { UserModel } from '$/commonTypesWithClient/models';
 import type { BoardArray } from '$/repository/boardRepository';
 
 export type Methods = {
@@ -12,7 +11,6 @@ export type Methods = {
     reqBody: {
       x: number;
       y: number;
-      user: UserModel;
     };
     resBody: {
       board: BoardArray;
