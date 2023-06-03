@@ -1,4 +1,4 @@
-# |Project Name|
+# network-othello
 
 フロントエンドは src ディレクトリの [Next.js](https://nextjs.org/) 、バックエンドは server ディレクトリの [frourio](https://frourio.com/) で構築された TypeScript で一気通貫開発が可能なモノレポサービス
 
@@ -32,7 +32,7 @@ prisma 用の.env には自分で起動した PostgreSQL の設定を書く
 $ cp .env.example .env
 $ cp server/.env.example server/.env
 $ cp docker/dev/.env.example docker/dev/.env
-$ echo "API_DATABASE_URL=postgresql://root:root@localhost:5432/|Project Name|" >> server/prisma/.env
+$ echo "API_DATABASE_URL=postgresql://root:root@localhost:5432/network-othello" >> server/prisma/.env
 ```
 
 ### ミドルウェアのセットアップ

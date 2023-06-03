@@ -3,10 +3,10 @@ import { useAtom } from 'jotai';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { Loading } from 'src/components/Loading/Loading';
-import { BasicHeader } from 'src/pages/@components/BasicHeader/BasicHeader';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
 import { userAtom } from '../atoms/user';
+import { BasicHeader } from './@components/BasicHeader/BasicHeader';
 import styles from './index.module.css';
 
 const Home = () => {
