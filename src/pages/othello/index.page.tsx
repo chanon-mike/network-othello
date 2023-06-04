@@ -1,4 +1,5 @@
 import type { BoardArray } from '$/repository/boardRepository';
+import type { Score } from '$/repository/scoreRepository';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { userAtom } from 'src/atoms/user';
@@ -16,15 +17,25 @@ const Home = () => {
 
   const [user] = useAtom(userAtom);
   const [board, setBoard] = useState<BoardArray>();
+  const [score, setScore] = useState<Score>({ blackScore: 0, whiteScore: 0 });
 
   const fetchBoard = async () => {
-    const board = await apiClient.board.$get().catch(returnNull);
+    const response = await apiClient.board.$get().catch(returnNull);
 
-    if (board !== null) setBoard(board.board);
+    if (response !== null) setBoard(response.board);
+  };
+
+  const fetchScore = async () => {
+    const response = await apiClient.score.$get().catch(returnNull);
+
+    if (response !== null) setScore(response);
   };
 
   useEffect(() => {
-    const cancelId = setInterval(fetchBoard, 500);
+    const cancelId = setInterval(() => {
+      fetchBoard();
+      fetchScore();
+    }, 500);
     return () => clearInterval(cancelId);
   }, []);
 
@@ -35,10 +46,10 @@ const Home = () => {
       <BasicHeader user={user} />
       <div className={styles.container}>
         <div className={styles.row}>
-          {/* <div className={styles.scoreBorder}>
+          <div className={styles.scoreBorder}>
             <div className={styles.disc} style={{ backgroundColor: '#000' }} />{' '}
-            <span className={styles.score}>x{score[0]}</span>
-          </div> */}
+            <span className={styles.score}>x{score.blackScore}</span>
+          </div>
 
           <div className={styles.board}>
             {/* Display a board */}
@@ -98,10 +109,10 @@ const Home = () => {
             </div>
           )} */}
 
-          {/* <div className={styles.scoreBorder}>
+          <div className={styles.scoreBorder}>
             <div className={styles.disc} style={{ backgroundColor: '#fff' }} />{' '}
-            <span className={styles.score}>x{score[1]}</span>
-          </div> */}
+            <span className={styles.score}>x{score.whiteScore}</span>
+          </div>
         </div>
       </div>
     </>
