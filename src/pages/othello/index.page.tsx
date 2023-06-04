@@ -1,4 +1,4 @@
-import type { BoardArray } from '$/repository/boardRepository';
+import type { BoardArray, Pos } from '$/repository/boardRepository';
 import type { Score } from '$/repository/scoreRepository';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
@@ -11,23 +11,35 @@ import styles from './othello.module.css';
 
 const Home = () => {
   const onClick = async (x: number, y: number) => {
-    await apiClient.board.$post({ body: { x, y } });
-    await fetchBoard();
+    const isValid = validMoveList.some((move) => move.x === x && move.y === y);
+
+    // Place disc if valid
+    if (isValid) {
+      await apiClient.board.$post({ body: { x, y } });
+      await fetchBoard();
+    }
   };
 
   const [user] = useAtom(userAtom);
   const [board, setBoard] = useState<BoardArray>();
   const [score, setScore] = useState<Score>({ blackScore: 0, whiteScore: 0 });
+  const [validMoveList, setValidMoveList] = useState<Pos[]>([]);
 
+  // GET board and GET list of valid move
   const fetchBoard = async () => {
     const response = await apiClient.board.$get().catch(returnNull);
 
-    if (response !== null) setBoard(response.board);
+    if (response !== null) {
+      setBoard(response.board);
+      // Add a list of valid moves
+      const validMoves: Pos[] = await apiClient.board.valid_move.$get();
+      setValidMoveList(validMoves);
+    }
   };
 
+  // GET score
   const fetchScore = async () => {
     const response = await apiClient.score.$get().catch(returnNull);
-
     if (response !== null) setScore(response);
   };
 
@@ -70,9 +82,9 @@ const Home = () => {
                   )}
 
                   {/* Display valid move */}
-                  {/* {validMoves.some(([vx, vy]) => vx === x && vy === y) && (
+                  {validMoveList.some(({ x: vx, y: vy }) => vx === x && vy === y) && (
                     <span className={`${styles.disc} ${styles.valid}`} />
-                  )} */}
+                  )}
                 </div>
               ))
             )}
