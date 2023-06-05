@@ -16,6 +16,7 @@ const Home = () => {
     // Place disc if valid
     if (isValid) {
       await apiClient.board.$post({ body: { x, y } });
+      await apiClient.board.flip.$post({ body: { x, y } });
       await fetchBoard();
     }
   };

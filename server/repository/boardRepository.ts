@@ -54,6 +54,25 @@ export const boardRepository = {
 
     return validMoves;
   },
+  flipDisc: (params: Pos, userId: UserId): BoardArray => {
+    const board = boardRepository.getBoard();
+    const userColor = userColorRepository.getUserColor(userId);
+
+    directions.forEach((direction) => {
+      const [dx, dy] = direction;
+      let currX = params.x + dx;
+      let currY = params.y + dy;
+
+      console.log(dx, dy, currX, currY, board[currY][currX]);
+      while (board[currY][currX] === 2 / userColor) {
+        board[currY][currX] = userColor;
+        currX += dx;
+        currY += dy;
+      }
+    });
+
+    return board;
+  },
 };
 
 // If the position is within the board boundaries
