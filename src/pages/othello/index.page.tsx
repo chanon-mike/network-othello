@@ -10,13 +10,13 @@ import { returnNull } from 'src/utils/returnNull';
 import styles from './othello.module.css';
 
 const Home = () => {
+  // Function to handle disc placement
   const onClick = async (x: number, y: number) => {
     const isValid = validMoveList.some((move) => move.x === x && move.y === y);
 
-    // Place disc if valid
     if (isValid) {
       await apiClient.board.$post({ body: { x, y } });
-      await apiClient.board.flip.$post({ body: { x, y } });
+      setLatestMove({ x, y });
       await fetchBoard();
     }
   };
@@ -24,6 +24,7 @@ const Home = () => {
   const [user] = useAtom(userAtom);
   const [board, setBoard] = useState<BoardArray>();
   const [score, setScore] = useState<Score>({ blackScore: 0, whiteScore: 0 });
+  const [latestMove, setLatestMove] = useState<Pos>();
   const [validMoveList, setValidMoveList] = useState<Pos[]>([]);
 
   // GET board and GET list of valid move
@@ -76,9 +77,9 @@ const Home = () => {
                       style={{ background: color === 1 ? '#000' : '#fff' }}
                     >
                       {/* Show a mark of latest move in the middle of a disc */}
-                      {/* {latestMove[0] === x && latestMove[1] === y && (
+                      {latestMove?.x === x && latestMove?.y === y && (
                         <div className={styles.current} />
-                      )} */}
+                      )}
                     </div>
                   )}
 

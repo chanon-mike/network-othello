@@ -1,5 +1,5 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
-import { userColorRepository } from './userColorRepository';
+import { playerRepository } from './playerRepository';
 
 export type BoardArray = number[][];
 export type Pos = { x: number; y: number };
@@ -29,12 +29,29 @@ const directions = [
 export const boardRepository = {
   getBoard: (): BoardArray => board,
   clickBoard: (params: Pos, userId: UserId): BoardArray => {
-    board[params.y][params.x] = userColorRepository.getUserColor(userId);
+    let currentPlayer = playerRepository.getCurrentPlayer();
+    // Place disc and flip disc if current turn is current player
+    if (currentPlayer === userId) {
+      const userColor = playerRepository.getUserColor(userId);
+      board[params.y][params.x] = userColor;
+      directions.forEach((direction) => {
+        const [dx, dy] = direction;
+        const newX = params.x + dx;
+        const newY = params.y + dy;
+        if (isValidMove(newX, newY, dx, dy, userColor)) flipDisc(newX, newY, dx, dy, userColor);
+      });
+
+      // Switch to another player turn
+      currentPlayer = playerRepository.switchTurn();
+      playerRepository.setCurrentPlayer(currentPlayer);
+    }
+
     return board;
   },
   getValidMoves: (userId: UserId): Pos[] => {
-    const board = boardRepository.getBoard();
+    // Get a list of valid moves
     const validMoves: Pos[] = [];
+    const userColor = playerRepository.getUserColor(userId);
 
     // Loop through each cell in the board and find valid moves
     board.forEach((row, y) =>
@@ -45,7 +62,7 @@ export const boardRepository = {
             const newX = x + dx;
             const newY = y + dy;
 
-            if (isValidMove(newX, newY, dx, dy, board, userId)) {
+            if (isValidMove(newX, newY, dx, dy, userColor)) {
               validMoves.push({ x, y });
             }
           });
@@ -54,42 +71,22 @@ export const boardRepository = {
 
     return validMoves;
   },
-  flipDisc: (params: Pos, userId: UserId): BoardArray => {
-    const board = boardRepository.getBoard();
-    const userColor = userColorRepository.getUserColor(userId);
-
-    directions.forEach((direction) => {
-      const [dx, dy] = direction;
-      let currX = params.x + dx;
-      let currY = params.y + dy;
-
-      console.log(dx, dy, currX, currY, board[currY][currX]);
-      while (board[currY][currX] === 2 / userColor) {
-        board[currY][currX] = userColor;
-        currX += dx;
-        currY += dy;
-      }
-    });
-
-    return board;
-  },
 };
 
 // If the position is within the board boundaries
-const isValidPosition = (x: number, y: number, board: BoardArray): boolean => {
+const isInsideBoard = (x: number, y: number): boolean => {
   return x >= 0 && x < board[0].length && y >= 0 && y < board.length;
 };
 
 // If there are same color discs between new disc and another disc, else false
-const findSameColorInLine = (
+const isSameColorInLine = (
   x: number,
   y: number,
   dx: number,
   dy: number,
-  board: BoardArray,
   userColor: number
 ): boolean => {
-  while (isValidPosition(x, y, board)) {
+  while (isInsideBoard(x, y)) {
     const currDisc = board[y][x];
 
     if (currDisc === 0) {
@@ -105,22 +102,25 @@ const findSameColorInLine = (
 };
 
 // Check if the move is valid or not
-const isValidMove = (
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  board: BoardArray,
-  userId: UserId
-): boolean => {
-  const userColor = userColorRepository.getUserColor(userId);
-
-  if (isValidPosition(x, y, board) && board[y][x] !== 0 && board[y][x] !== userColor) {
+const isValidMove = (x: number, y: number, dx: number, dy: number, userColor: number): boolean => {
+  if (isInsideBoard(x, y) && board[y][x] !== 0 && board[y][x] !== userColor) {
     const currX = x + dx;
     const currY = y + dy;
 
     // Return true if there are same color discs between new disc and another disc, else false
-    return findSameColorInLine(currX, currY, dx, dy, board, userColor);
+    return isSameColorInLine(currX, currY, dx, dy, userColor);
   }
   return false;
+};
+
+// function to flip disc after place a new one
+const flipDisc = (x: number, y: number, dx: number, dy: number, userColor: number): void => {
+  let currX = x;
+  let currY = y;
+
+  while (board[currY][currX] === 2 / userColor) {
+    board[currY][currX] = userColor;
+    currX += dx;
+    currY += dy;
+  }
 };
