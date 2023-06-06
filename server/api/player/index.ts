@@ -1,7 +1,9 @@
+import type { PlayerTurn } from '$/repository/playerRepository';
+
 export type Methods = {
   get: {
     resBody: {
-      currentPlayerColor: number;
+      currentPlayerId: PlayerTurn;
     };
   };
 };

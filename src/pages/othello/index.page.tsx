@@ -1,4 +1,5 @@
 import type { BoardArray, Pos } from '$/repository/boardRepository';
+import type { PlayerTurn } from '$/repository/playerRepository';
 import type { Score } from '$/repository/scoreRepository';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
@@ -16,7 +17,6 @@ const Home = () => {
 
     if (isValid) {
       await apiClient.board.$post({ body: { x, y } });
-      setLatestMove({ x, y });
       await fetchBoard();
     }
   };
@@ -26,6 +26,7 @@ const Home = () => {
   const [score, setScore] = useState<Score>({ blackScore: 0, whiteScore: 0 });
   const [latestMove, setLatestMove] = useState<Pos>();
   const [validMoveList, setValidMoveList] = useState<Pos[]>([]);
+  const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<PlayerTurn>();
 
   // GET board and GET list of valid move
   const fetchBoard = async () => {
@@ -45,10 +46,25 @@ const Home = () => {
     if (response !== null) setScore(response);
   };
 
+  // GET current player turn id (for displaying valid moves)
+  const fetchCurrentTurn = async () => {
+    const response = await apiClient.player.$get();
+    setCurrentTurnPlayerId(response.currentPlayerId);
+  };
+
+  // GET latest move and set it (make both player see the same mark)
+  const fetchLatestMove = async () => {
+    const response = await apiClient.board.latest_move.$get();
+    setLatestMove(response.latestMove);
+  };
+
+  // Fetch board every 0.5s to make it look real-time
   useEffect(() => {
     const cancelId = setInterval(() => {
       fetchBoard();
       fetchScore();
+      fetchCurrentTurn();
+      fetchLatestMove();
     }, 500);
     return () => clearInterval(cancelId);
   }, []);
@@ -82,11 +98,11 @@ const Home = () => {
                       )}
                     </div>
                   )}
-
                   {/* Display valid move */}
-                  {validMoveList.some(({ x: vx, y: vy }) => vx === x && vy === y) && (
-                    <span className={`${styles.disc} ${styles.valid}`} />
-                  )}
+                  {user.id === currentTurnPlayerId &&
+                    validMoveList.some(({ x: vx, y: vy }) => vx === x && vy === y) && (
+                      <span className={`${styles.disc} ${styles.valid}`} />
+                    )}
                 </div>
               ))
             )}

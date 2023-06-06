@@ -26,6 +26,8 @@ const directions = [
   [-1, -1], // Up-Left
 ];
 
+let latestMove: Pos;
+
 export const boardRepository = {
   getBoard: (): BoardArray => board,
   clickBoard: (params: Pos, userId: UserId): BoardArray => {
@@ -33,6 +35,8 @@ export const boardRepository = {
     // Place disc and flip disc if current turn is current player
     if (currentPlayer === userId) {
       const userColor = playerRepository.getUserColor(userId);
+
+      latestMove = { x: params.x, y: params.y };
       board[params.y][params.x] = userColor;
       directions.forEach((direction) => {
         const [dx, dy] = direction;
@@ -70,6 +74,9 @@ export const boardRepository = {
     );
 
     return validMoves;
+  },
+  getLatestMove: (): Pos => {
+    return latestMove;
   },
 };
 

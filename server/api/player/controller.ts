@@ -2,8 +2,8 @@ import { playerRepository } from '$/repository/playerRepository';
 import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: ({ user }) => ({
+  get: () => ({
     status: 200,
-    body: { currentPlayerColor: playerRepository.getUserColor(user.id) },
+    body: { currentPlayerId: playerRepository.getCurrentPlayer() },
   }),
 }));
