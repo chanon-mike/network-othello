@@ -1,9 +1,9 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
 
-export type ColorDict = { black?: UserId; white?: UserId };
+export type UserColorDict = { black?: UserId; white?: UserId };
 export type PlayerTurn = UserId | undefined;
 
-const userColorDict: ColorDict = {};
+const userColorDict: UserColorDict = {};
 let currentPlayer: PlayerTurn = undefined;
 
 export const playerRepository = {
@@ -37,5 +37,8 @@ export const playerRepository = {
       currentPlayer = userColorDict.black;
     }
     return currentPlayer;
+  },
+  getUserColorDict: (): UserColorDict => {
+    return userColorDict;
   },
 };

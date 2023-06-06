@@ -78,6 +78,22 @@ export const boardRepository = {
   getLatestMove: (): Pos => {
     return latestMove;
   },
+  isGameEnd: (): boolean => {
+    const userColorDict = playerRepository.getUserColorDict();
+    const blackUserId = userColorDict.black;
+    const whiteUserId = userColorDict.white;
+
+    if (
+      blackUserId !== undefined &&
+      boardRepository.getValidMoves(blackUserId).length === 0 &&
+      whiteUserId !== undefined &&
+      boardRepository.getValidMoves(whiteUserId).length === 0
+    ) {
+      return true;
+    }
+
+    return false;
+  },
 };
 
 // If the position is within the board boundaries
