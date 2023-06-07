@@ -138,9 +138,12 @@ const Home = () => {
                   ? 'WHITE WIN'
                   : 'TIE'}
               </p>
-              {/* <a className={styles.close} onClick={() => setBoard()}>
+              <a
+                className={styles.close}
+                onClick={async () => await apiClient.board.restart.$put()}
+              >
                 Restart
-              </a> */}
+              </a>
             </div>
           )}
 

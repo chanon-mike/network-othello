@@ -45,9 +45,13 @@ export const boardRepository = {
         if (isValidMove(newX, newY, dx, dy, userColor)) flipDisc(newX, newY, dx, dy, userColor);
       });
 
-      // Switch to another player turn
-      currentPlayer = playerRepository.switchTurn();
-      playerRepository.setCurrentPlayer(currentPlayer);
+      // If current player can move, switch turn, then if opponent can move too, switch to opponent turn and set it
+      // Else, don't set current turn to opponent turn and switch back to this player turn
+      if (currentPlayer && boardRepository.getValidMoves(currentPlayer).length)
+        currentPlayer = playerRepository.switchTurn();
+      if (currentPlayer && boardRepository.getValidMoves(currentPlayer).length)
+        playerRepository.setCurrentPlayer(currentPlayer);
+      else currentPlayer = playerRepository.switchTurn();
     }
 
     return board;
@@ -93,6 +97,23 @@ export const boardRepository = {
     }
 
     return false;
+  },
+  restart: (): void => {
+    const initialBoard: BoardArray = [
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 2, 0, 0, 0],
+      [0, 0, 0, 2, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+
+    // Reset board, latest move and current player turn
+    Object.assign(board, initialBoard);
+    latestMove = { x: 0, y: 0 };
+    playerRepository.setCurrentPlayer(undefined);
   },
 };
 
