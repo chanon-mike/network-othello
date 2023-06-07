@@ -1,0 +1,7 @@
+.current {
+  height: 5px;
+  width: 5px;
+  background-color: #f00;
+  border-radius: 100%;
+  margin: auto;
+}

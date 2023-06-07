@@ -1,4 +1,5 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
+import { boardRepository } from './boardRepository';
 
 export type UserColorDict = { black?: UserId; white?: UserId };
 export type PlayerTurn = UserId | undefined;
@@ -29,16 +30,22 @@ export const playerRepository = {
     // Set the current turn to player id
     currentPlayer = userId;
   },
-  switchTurn: (): PlayerTurn => {
-    // Switch turn (black to white, white to black)
-    if (currentPlayer === userColorDict.black) {
-      currentPlayer = userColorDict.white;
-    } else {
-      currentPlayer = userColorDict.black;
-    }
-    return currentPlayer;
-  },
   getUserColorDict: (): UserColorDict => {
     return userColorDict;
   },
+  switchPlayerTurnWithValidation: (): PlayerTurn => {
+    // If current player can move and opponent can move too, switch to opponent turn and set to opponent turn
+    const opponentPlayer: PlayerTurn = switchTurn();
+    if (opponentPlayer && boardRepository.getValidMoves(opponentPlayer).length) {
+      currentPlayer = opponentPlayer;
+    }
+
+    return currentPlayer;
+  },
+};
+
+// Helper function to switch player turn in dict
+const switchTurn = (): PlayerTurn => {
+  // Switch turn (black to white, white to black)
+  return currentPlayer === userColorDict.black ? userColorDict.white : userColorDict.black;
 };

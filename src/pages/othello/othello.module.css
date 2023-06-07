@@ -34,11 +34,16 @@
 }
 
 .valid {
+  width: 4rem;
+  height: 4rem;
   opacity: 0.5;
   border: 1px solid #303030;
+  border-radius: 100%;
   outline: 1px solid #303030;
   outline-offset: -0.3rem;
   background-color: transparent;
+  margin: auto;
+  display: flex;
 }
 
 .current {

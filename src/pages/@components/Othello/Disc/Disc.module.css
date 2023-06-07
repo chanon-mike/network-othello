@@ -1,0 +1,8 @@
+.disc {
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid #303030;
+  border-radius: 100%;
+  margin: auto;
+  display: flex;
+}

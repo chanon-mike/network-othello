@@ -1,0 +1,26 @@
+.board {
+  background-color: #078846;
+  width: 640px;
+  height: 640px;
+}
+
+.cell {
+  border: 1px solid #000;
+  width: 80px;
+  height: 80px;
+  display: inline-flex;
+  vertical-align: top;
+}
+
+.valid {
+  width: 4rem;
+  height: 4rem;
+  opacity: 0.5;
+  border: 1px solid #303030;
+  border-radius: 100%;
+  outline: 1px solid #303030;
+  outline-offset: -0.3rem;
+  background-color: transparent;
+  margin: auto;
+  display: flex;
+}

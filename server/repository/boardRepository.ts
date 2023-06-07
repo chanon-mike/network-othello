@@ -31,7 +31,7 @@ let latestMove: Pos;
 export const boardRepository = {
   getBoard: (): BoardArray => board,
   clickBoard: (params: Pos, userId: UserId): BoardArray => {
-    let currentPlayer = playerRepository.getCurrentPlayer();
+    const currentPlayer = playerRepository.getCurrentPlayer();
     // Place disc and flip disc if current turn is current player
     if (currentPlayer === userId) {
       const userColor = playerRepository.getUserColor(userId);
@@ -45,13 +45,8 @@ export const boardRepository = {
         if (isValidMove(newX, newY, dx, dy, userColor)) flipDisc(newX, newY, dx, dy, userColor);
       });
 
-      // If current player can move, switch turn, then if opponent can move too, switch to opponent turn and set it
-      // Else, don't set current turn to opponent turn and switch back to this player turn
-      if (currentPlayer && boardRepository.getValidMoves(currentPlayer).length)
-        currentPlayer = playerRepository.switchTurn();
-      if (currentPlayer && boardRepository.getValidMoves(currentPlayer).length)
-        playerRepository.setCurrentPlayer(currentPlayer);
-      else currentPlayer = playerRepository.switchTurn();
+      // Switch to opponent turn if valid
+      playerRepository.setCurrentPlayer(playerRepository.switchPlayerTurnWithValidation());
     }
 
     return board;

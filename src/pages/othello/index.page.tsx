@@ -8,6 +8,9 @@ import { Loading } from 'src/components/Loading/Loading';
 import { BasicHeader } from 'src/pages/@components/BasicHeader/BasicHeader';
 import { apiClient } from 'src/utils/apiClient';
 import { returnNull } from 'src/utils/returnNull';
+import Board from '../@components/Othello/Board/Board';
+import Modal from '../@components/Othello/Modal/Modal';
+import ScoreBorder from '../@components/Othello/ScoreBorder/ScoreBorder';
 import styles from './othello.module.css';
 
 const Home = () => {
@@ -84,73 +87,19 @@ const Home = () => {
       <BasicHeader user={user} />
       <div className={styles.container}>
         <div className={styles.row}>
-          <div className={styles.scoreBorder}>
-            <div className={styles.disc} style={{ backgroundColor: '#000' }} />{' '}
-            <span className={styles.score}>x{score.blackScore}</span>
-          </div>
+          <ScoreBorder score={score} backgroundColor={'#000'} />
 
-          <div className={styles.board}>
-            {/* Display a board */}
-            {board.map((row, y) =>
-              row.map((color, x) => (
-                <div className={styles.cell} key={`${x}-${y}`} onClick={() => onClick(x, y)}>
-                  {/* Place a disc */}
-                  {color !== 0 && (
-                    <div
-                      className={styles.disc}
-                      style={{ background: color === 1 ? '#000' : '#fff' }}
-                    >
-                      {/* Show a mark of latest move in the middle of a disc */}
-                      {latestMove?.x === x && latestMove?.y === y && (
-                        <div className={styles.current} />
-                      )}
-                    </div>
-                  )}
-                  {/* Display valid move */}
-                  {user.id === currentTurnPlayerId &&
-                    validMoveList.some(({ x: vx, y: vy }) => vx === x && vy === y) && (
-                      <span className={`${styles.disc} ${styles.valid}`} />
-                    )}
-                </div>
-              ))
-            )}
-          </div>
+          <Board
+            user={user}
+            board={board}
+            latestMovePos={latestMove}
+            currentTurnPlayerId={currentTurnPlayerId}
+            validMoveList={validMoveList}
+            onClick={onClick}
+          />
+          <Modal validMoveList={validMoveList} isGameEnd={isGameEnd} score={score} />
 
-          {/* No moves left for a player */}
-          {!validMoveList.length && !isGameEnd && (
-            <div className={styles.modal}>
-              <p className={styles.modalContent}>NO MORE MOVES</p>
-            </div>
-          )}
-          {/* When all cell are filled, or no more move available for both sides */}
-          {isGameEnd && (
-            <div className={styles.modal}>
-              <div className={styles.row}>
-                <div className={styles.disc} style={{ backgroundColor: '#000' }} />{' '}
-                <span className={styles.modalContent}>x{score.blackScore}</span>
-                <div className={styles.disc} style={{ backgroundColor: '#fff' }} />{' '}
-                <span className={styles.modalContent}>x{score.whiteScore}</span>
-              </div>
-              <p>
-                {score.blackScore > score.whiteScore
-                  ? 'BLACK WIN'
-                  : score.blackScore < score.whiteScore
-                  ? 'WHITE WIN'
-                  : 'TIE'}
-              </p>
-              <a
-                className={styles.close}
-                onClick={async () => await apiClient.board.restart.$put()}
-              >
-                Restart
-              </a>
-            </div>
-          )}
-
-          <div className={styles.scoreBorder}>
-            <div className={styles.disc} style={{ backgroundColor: '#fff' }} />{' '}
-            <span className={styles.score}>x{score.whiteScore}</span>
-          </div>
+          <ScoreBorder score={score} backgroundColor={'#fff'} />
         </div>
       </div>
     </>
