@@ -13,3 +13,10 @@ export type TaskModel = {
   done: boolean;
   created: number;
 };
+
+export type LobbyModel = {
+  id: number;
+  title: string;
+  created: number;
+  updated: number;
+};

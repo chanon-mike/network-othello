@@ -4,6 +4,13 @@ import { playerRepository } from './playerRepository';
 export type BoardArray = number[][];
 export type Pos = { x: number; y: number };
 
+// const toModel = (primaBoard: Board): TaskModel => ({
+//   id: taskIdParser.parse(prismaTask.id),
+//   label: prismaTask.label,
+//   done: prismaTask.done,
+//   created: prismaTask.createdAt.getTime(),
+// });
+
 const board: BoardArray = [
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],

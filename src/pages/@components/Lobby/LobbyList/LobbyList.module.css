@@ -1,0 +1,17 @@
+.room {
+  width: 50%;
+  min-height: 4rem;
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #000;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+}
+
+.room h3 {
+  font-size: 1.3rem;
+  color: #000;
+}
