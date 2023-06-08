@@ -13,3 +13,36 @@ model Task {
   done      Boolean
   createdAt DateTime
 }
+
+model Lobby {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Board     Board?
+  Player    Player[]
+}
+
+model Player {
+  id          Int      @id @default(autoincrement())
+  lobbyId     Int
+  lobby       Lobby    @relation(fields: [lobbyId], references: [id])
+  userId      String   @unique
+  displayName String
+  color       Int
+  createdAt   DateTime @default(now())
+  Board       Board[]
+}
+
+model Board {
+  id                  Int      @id @default(autoincrement())
+  lobbyId             Int      @unique
+  lobby               Lobby    @relation(fields: [lobbyId], references: [id])
+  boardData           Int[]
+  latestMove          Json?
+  isGameEnd           Boolean  @default(false)
+  currentTurnPlayerId String
+  currentTurnPlayer   Player   @relation(fields: [currentTurnPlayerId], references: [userId])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
