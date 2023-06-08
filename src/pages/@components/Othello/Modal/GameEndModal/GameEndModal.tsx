@@ -30,9 +30,9 @@ export const GameEndModal = ({ score }: GameEndModalProps) => {
           ? 'WHITE WIN'
           : 'TIE'}
       </p>
-      <a className={styles.close} onClick={async () => await apiClient.board.restart.$put()}>
+      <button className={styles.close} onClick={async () => await apiClient.board.restart.$put()}>
         Restart
-      </a>
+      </button>
     </div>
   );
 };

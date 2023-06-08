@@ -27,9 +27,11 @@
 }
 
 .close {
+  font-family: cursive;
   background-color: #fff;
   color: #000;
+  margin-top: 10px;
   padding: 5px 20px;
+  border: 0;
   border-radius: 5%;
-  cursor: pointer;
 }

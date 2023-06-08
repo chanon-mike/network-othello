@@ -1,20 +1,20 @@
 .board {
   background-color: #078846;
   width: 640px;
-  height: 640px;
+  aspect-ratio: 1;
 }
 
 .cell {
   border: 1px solid #000;
   width: 80px;
-  height: 80px;
+  aspect-ratio: 1;
   display: inline-flex;
   vertical-align: top;
 }
 
 .valid {
   width: 4rem;
-  height: 4rem;
+  aspect-ratio: 1;
   opacity: 0.5;
   border: 1px solid #303030;
   border-radius: 100%;
@@ -23,4 +23,34 @@
   background-color: transparent;
   margin: auto;
   display: flex;
+}
+
+@media all and (width < 700px), (height < 700px) {
+  .board {
+    width: 480px;
+  }
+
+  .cell {
+    width: 60px;
+  }
+
+  .valid {
+    width: 3rem;
+  }
+}
+
+@media all and (width < 500px), (height < 500px) {
+  .board {
+    width: 320px;
+    height: 320px;
+  }
+
+  .cell {
+    width: 40px;
+    height: 40px;
+  }
+
+  .valid {
+    width: 2rem;
+  }
 }
