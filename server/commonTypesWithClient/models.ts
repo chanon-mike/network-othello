@@ -20,3 +20,12 @@ export type LobbyModel = {
   created: number;
   updated: number;
 };
+
+export type PlayerModel = {
+  id: number | undefined;
+  lobbyId: number | undefined;
+  userId: string | undefined;
+  displayName: string | undefined;
+  color: number | undefined;
+  created: number | undefined;
+};

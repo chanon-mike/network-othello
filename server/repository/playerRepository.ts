@@ -1,4 +1,7 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
+import type { PlayerModel } from '$/commonTypesWithClient/models';
+import { prismaClient } from '$/service/prismaClient';
+import type { Player } from '@prisma/client';
 import { boardRepository } from './boardRepository';
 
 export type UserColorDict = { black?: UserId; white?: UserId };
@@ -6,6 +9,27 @@ export type PlayerTurn = UserId | undefined;
 
 const userColorDict: UserColorDict = {};
 let currentPlayer: PlayerTurn = undefined;
+
+const toModel = (prismaPlayer: Player | null): PlayerModel => ({
+  id: prismaPlayer?.id,
+  lobbyId: prismaPlayer?.lobbyId,
+  userId: prismaPlayer?.userId,
+  displayName: prismaPlayer?.displayName,
+  color: prismaPlayer?.color,
+  created: prismaPlayer?.createdAt.getTime(),
+});
+
+export const getCurrentPlayerInLobby = async (
+  lobbyId: PlayerModel['lobbyId']
+): Promise<PlayerModel[]> => {
+  const prismaPlayer = await prismaClient.player.findMany({
+    where: {
+      lobbyId,
+    },
+  });
+
+  return prismaPlayer.map(toModel);
+};
 
 export const playerRepository = {
   getUserColor: (userId: UserId): number => {
