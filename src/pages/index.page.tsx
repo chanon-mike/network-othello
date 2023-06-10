@@ -21,20 +21,31 @@ const Home = () => {
   };
 
   const fetchLobby = async () => {
-    const response = await apiClient.lobby.$get().catch(returnNull);
+    // Fetch all lobby and find player in each lobby, then calculate current playerNum in each lobby
+    const lobbyResponse = await apiClient.lobby.$get().catch(returnNull);
 
-    if (response !== null) {
-      setLobby(response.lobby);
+    if (lobbyResponse !== null) {
+      // Use Promise.all to resolve when all promises in array have resolved
+      const lobbyPromises = lobbyResponse.lobby.map(async (lb) => {
+        const playerResponse = await apiClient.player._lobbyId(lb.id).$get();
+        lb.playerNum = playerResponse.player.length;
+        return lb;
+      });
+      setLobby(await Promise.all(lobbyPromises));
     }
   };
 
   const createLobby = async (e: FormEvent) => {
+    // Create a new lobby, create a new player from current user and add to new lobby
     e.preventDefault();
     if (!lobbyName) return;
 
-    await apiClient.lobby.$post({ body: { title: lobbyName } });
+    const lobbyResponse = await apiClient.lobby.$post({ body: { title: lobbyName } });
+    const playerResponse = apiClient.player._lobbyId(lobbyResponse.lobby.id).$post();
+    const fetchLobbyPromise = fetchLobby();
+
+    await Promise.allSettled([playerResponse, fetchLobbyPromise]);
     setLobbyName('');
-    await fetchLobby();
   };
 
   useEffect(() => {

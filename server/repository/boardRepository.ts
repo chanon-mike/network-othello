@@ -35,6 +35,19 @@ const directions = [
 
 let latestMove: Pos;
 
+// const toModel = (prismaBoard: Board): BoardModel => ({
+//   id: prismaBoard.id,
+//   lobbyId: prismaBoard.lobbyId,
+//   boardData: prismaBoard.boardData as BoardArray,
+//   latestMove: prismaBoard.latestMove as Pos,
+//   isGameEnd: prismaBoard.isGameEnd,
+//   currentTurnPlayerId: prismaBoard.currentTurnPlayerId as UserId,
+//   created: prismaBoard.createdAt.getTime(),
+//   updated: prismaBoard.updatedAt.getTime(),
+// });
+
+// export const createNewBoard = async (lobbyId: PlayerModel['lobbyId']) => {};
+
 export const boardRepository = {
   getBoard: (): BoardArray => board,
   clickBoard: (params: Pos, userId: UserId): BoardArray => {

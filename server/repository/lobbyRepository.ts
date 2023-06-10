@@ -21,6 +21,7 @@ export const getAllLobby = async (): Promise<LobbyModel[]> => {
 };
 
 export const createLobby = async (title: LobbyModel['title']): Promise<LobbyModel> => {
+  // Create new lobby with current user as a new player in that lobby
   const newLobby = {
     data: {
       title,
@@ -29,8 +30,5 @@ export const createLobby = async (title: LobbyModel['title']): Promise<LobbyMode
     },
   };
   const prismaLobby = await prismaClient.lobby.create(newLobby);
-
-  console.log(title, prismaLobby);
-
   return toModel(prismaLobby);
 };

@@ -38,7 +38,7 @@ model Board {
   id                  Int      @id @default(autoincrement())
   lobbyId             Int      @unique
   lobby               Lobby    @relation(fields: [lobbyId], references: [id])
-  boardData           Int[]
+  boardData           Json
   latestMove          Json?
   isGameEnd           Boolean  @default(false)
   currentTurnPlayerId String

@@ -1,3 +1,4 @@
+import type { BoardArray, Pos } from '$/repository/boardRepository';
 import type { TaskId, UserId } from './branded';
 
 export type UserModel = {
@@ -19,13 +20,26 @@ export type LobbyModel = {
   title: string;
   created: number;
   updated: number;
+  playerNum?: number;
+  Player?: PlayerModel;
 };
 
 export type PlayerModel = {
-  id: number | undefined;
-  lobbyId: number | undefined;
-  userId: string | undefined;
-  displayName: string | undefined;
-  color: number | undefined;
-  created: number | undefined;
+  id: number;
+  lobbyId: number;
+  userId: UserId;
+  displayName: string;
+  color: number;
+  created: number;
+};
+
+export type BoardModel = {
+  id: number;
+  lobbyId: number;
+  boardData: BoardArray;
+  latestMove: Pos;
+  isGameEnd: boolean;
+  currentTurnPlayerId: UserId;
+  created: number;
+  updated: number;
 };

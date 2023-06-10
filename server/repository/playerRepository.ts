@@ -1,5 +1,5 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
-import type { PlayerModel } from '$/commonTypesWithClient/models';
+import type { PlayerModel, UserModel } from '$/commonTypesWithClient/models';
 import { prismaClient } from '$/service/prismaClient';
 import type { Player } from '@prisma/client';
 import { boardRepository } from './boardRepository';
@@ -10,25 +10,57 @@ export type PlayerTurn = UserId | undefined;
 const userColorDict: UserColorDict = {};
 let currentPlayer: PlayerTurn = undefined;
 
-const toModel = (prismaPlayer: Player | null): PlayerModel => ({
-  id: prismaPlayer?.id,
-  lobbyId: prismaPlayer?.lobbyId,
-  userId: prismaPlayer?.userId,
-  displayName: prismaPlayer?.displayName,
-  color: prismaPlayer?.color,
-  created: prismaPlayer?.createdAt.getTime(),
+const toModel = (prismaPlayer: Player): PlayerModel => ({
+  id: prismaPlayer.id,
+  lobbyId: prismaPlayer.lobbyId,
+  userId: prismaPlayer.userId as UserId,
+  displayName: prismaPlayer.displayName,
+  color: prismaPlayer.color,
+  created: prismaPlayer.createdAt.getTime(),
 });
 
 export const getCurrentPlayerInLobby = async (
   lobbyId: PlayerModel['lobbyId']
 ): Promise<PlayerModel[]> => {
+  // Get current player that in the lobby of lobbyId
   const prismaPlayer = await prismaClient.player.findMany({
     where: {
       lobbyId,
     },
   });
-
   return prismaPlayer.map(toModel);
+};
+
+export const createPlayer = async (
+  lobbyId: PlayerModel['lobbyId'],
+  user: UserModel
+): Promise<PlayerModel> => {
+  const existingPlayer = await prismaClient.player.findUnique({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  if (existingPlayer) {
+    // userId already exists, return an error response
+    console.log('User already exist');
+    throw new Error('User already has a player');
+  } else {
+    // Create a player linked to a lobby id
+    const prismaPlayer = await prismaClient.player.create({
+      data: {
+        userId: user.id,
+        displayName: user.displayName ?? user.id,
+        color: playerRepository.getUserColor(user.id),
+        lobby: {
+          connect: {
+            id: lobbyId,
+          },
+        },
+      },
+    });
+    return toModel(prismaPlayer);
+  }
 };
 
 export const playerRepository = {

@@ -1,5 +1,11 @@
 # network-othello
 
+### Bug and value fixed
+
+[] User cannot create new lobby when they already create or play in other lobby (room)
+
+## Settings
+
 フロントエンドは src ディレクトリの [Next.js](https://nextjs.org/) 、バックエンドは server ディレクトリの [frourio](https://frourio.com/) で構築された TypeScript で一気通貫開発が可能なモノレポサービス
 
 ## デモ環境リンク
