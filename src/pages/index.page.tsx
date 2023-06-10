@@ -41,10 +41,11 @@ const Home = () => {
     if (!lobbyName) return;
 
     const lobbyResponse = await apiClient.lobby.$post({ body: { title: lobbyName } });
-    const playerResponse = apiClient.player._lobbyId(lobbyResponse.lobby.id).$post();
+    const boardResponse = await apiClient.board._lobbyId(lobbyResponse.lobby.id).$post();
+    const playerResponse = await apiClient.player._lobbyId(lobbyResponse.lobby.id).$post();
     const fetchLobbyPromise = fetchLobby();
 
-    await Promise.allSettled([playerResponse, fetchLobbyPromise]);
+    await Promise.allSettled([lobbyResponse, playerResponse, boardResponse, fetchLobbyPromise]);
     setLobbyName('');
   };
 

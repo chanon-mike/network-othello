@@ -2,7 +2,8 @@ import type { BoardArray, Pos } from '$/repository/boardRepository';
 import type { PlayerTurn } from '$/repository/playerRepository';
 import type { Score } from '$/repository/scoreRepository';
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
 import { userAtom } from 'src/atoms/user';
 import { Loading } from 'src/components/Loading/Loading';
 import { BasicHeader } from 'src/pages/@components/BasicHeader/BasicHeader';
@@ -11,7 +12,7 @@ import { returnNull } from 'src/utils/returnNull';
 import Board from '../@components/Othello/Board/Board';
 import Modal from '../@components/Othello/Modal/Modal';
 import ScoreBorder from '../@components/Othello/ScoreBorder/ScoreBorder';
-import styles from './othello.module.css';
+import styles from './index.module.css';
 
 const Home = () => {
   // Function to handle disc placement
@@ -19,7 +20,7 @@ const Home = () => {
     const isValid = validMoveList.some((move) => move.x === x && move.y === y);
 
     if (isValid) {
-      await apiClient.board.$post({ body: { x, y } });
+      // await apiClient.board.$post({ body: { x, y } });
       await fetchBoard();
     }
   };
@@ -32,12 +33,22 @@ const Home = () => {
   const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<PlayerTurn>();
   const [isGameEnd, setIsGameEnd] = useState<boolean>(false);
 
+  // Route handler data
+  const router = useRouter();
+  const { lobbyId } = router.query;
+  const lobbyIdRef = useRef<number>(parseInt(lobbyId as string, 10));
+
+  // Update lobbyIdRef whenever lobbyId change
+  useEffect(() => {
+    lobbyIdRef.current = parseInt(lobbyId as string, 10);
+  }, [lobbyId]);
+
   // GET board and GET list of valid move
   const fetchBoard = async () => {
-    const response = await apiClient.board.$get().catch(returnNull);
+    const response = await apiClient.board._lobbyId(lobbyIdRef.current).$get().catch(returnNull);
 
     if (response !== null) {
-      setBoard(response.board);
+      setBoard(response.board.boardData);
       // Add a list of valid moves
       const validMoveList: Pos[] = await apiClient.board.valid_move.$get();
       setValidMoveList(validMoveList);

@@ -31,18 +31,19 @@ model Player {
   displayName String
   color       Int
   createdAt   DateTime @default(now())
-  Board       Board[]
+  boardId     Int
+  board       Board    @relation(fields: [boardId], references: [id])
 }
 
 model Board {
-  id                  Int      @id @default(autoincrement())
-  lobbyId             Int      @unique
-  lobby               Lobby    @relation(fields: [lobbyId], references: [id])
-  boardData           Json
-  latestMove          Json?
-  isGameEnd           Boolean  @default(false)
-  currentTurnPlayerId String
-  currentTurnPlayer   Player   @relation(fields: [currentTurnPlayerId], references: [userId])
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  lobbyId           Int      @unique
+  lobby             Lobby    @relation(fields: [lobbyId], references: [id])
+  boardData         Json
+  latestMove        Json?
+  isGameEnd         Boolean  @default(false)
+  currentTurnUserId String?
+  playerList        Player[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

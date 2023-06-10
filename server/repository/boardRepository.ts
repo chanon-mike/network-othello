@@ -1,4 +1,7 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
+import type { BoardModel, PlayerModel } from '$/commonTypesWithClient/models';
+import { prismaClient } from '$/service/prismaClient';
+import type { Board } from '@prisma/client';
 import { playerRepository } from './playerRepository';
 
 export type BoardArray = number[][];
@@ -35,18 +38,90 @@ const directions = [
 
 let latestMove: Pos;
 
-// const toModel = (prismaBoard: Board): BoardModel => ({
-//   id: prismaBoard.id,
-//   lobbyId: prismaBoard.lobbyId,
-//   boardData: prismaBoard.boardData as BoardArray,
-//   latestMove: prismaBoard.latestMove as Pos,
-//   isGameEnd: prismaBoard.isGameEnd,
-//   currentTurnPlayerId: prismaBoard.currentTurnPlayerId as UserId,
-//   created: prismaBoard.createdAt.getTime(),
-//   updated: prismaBoard.updatedAt.getTime(),
-// });
+const toModel = (prismaBoard: Board): BoardModel => ({
+  id: prismaBoard.id,
+  lobbyId: prismaBoard.lobbyId,
+  boardData: prismaBoard.boardData as BoardArray,
+  latestMove: prismaBoard.latestMove as Pos,
+  isGameEnd: prismaBoard.isGameEnd,
+  currentTurnUserId: prismaBoard.currentTurnUserId as UserId,
+  created: prismaBoard.createdAt.getTime(),
+  updated: prismaBoard.updatedAt.getTime(),
+});
 
-// export const createNewBoard = async (lobbyId: PlayerModel['lobbyId']) => {};
+export const getBoard = async (lobbyId: PlayerModel['lobbyId']): Promise<BoardModel> => {
+  const prismaBoard = await prismaClient.board.findFirst({
+    where: { lobbyId },
+  });
+  if (prismaBoard === null) {
+    // Handle the case when the board is not found
+    throw new Error('Board not found');
+  }
+  return toModel(prismaBoard);
+};
+
+export const createBoard = async (lobbyId: PlayerModel['lobbyId']): Promise<BoardModel> => {
+  // Inital board
+  const initialBoard: BoardArray = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 2, 0, 0, 0],
+    [0, 0, 0, 2, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+  ];
+
+  // Create a new board
+  const prismaBoard = await prismaClient.board.create({
+    data: {
+      boardData: initialBoard,
+      latestMove: undefined,
+      isGameEnd: false,
+      currentTurnUserId: undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lobby: {
+        connect: {
+          id: lobbyId,
+        },
+      },
+    },
+  });
+
+  return toModel(prismaBoard);
+};
+
+// export const clickBoard = async (
+//   lobbyId: PlayerModel['lobbyId'],
+//   params: Pos,
+//   userId: UserId
+// ): Promise<BoardArray> => {
+//   const prismaBoard = await prismaClient.board.findFirst({ where: { lobbyId } });
+//   if (!prismaBoard) throw new Error("Board doesn't exist");
+//   const currentPlayer = prismaBoard?.currentTurnPlayerId;
+
+//   // const currentPlayer = playerRepository.getCurrentPlayer();
+//   // Place disc and flip disc if current turn is current player
+//   if (currentPlayer === userId) {
+//     const userColor = playerRepository.getUserColor(userId);
+
+//     latestMove = { x: params.x, y: params.y };
+//     board[params.y][params.x] = userColor;
+//     directions.forEach((direction) => {
+//       const [dx, dy] = direction;
+//       const newX = params.x + dx;
+//       const newY = params.y + dy;
+//       if (isValidMove(newX, newY, dx, dy, userColor)) flipDisc(newX, newY, dx, dy, userColor);
+//     });
+
+//     // Switch to opponent turn if valid
+//     playerRepository.setCurrentPlayer(playerRepository.switchPlayerTurnWithValidation());
+//   }
+
+//   return board;
+// };
 
 export const boardRepository = {
   getBoard: (): BoardArray => board,

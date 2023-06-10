@@ -27,6 +27,7 @@ export type LobbyModel = {
 export type PlayerModel = {
   id: number;
   lobbyId: number;
+  boardId: number;
   userId: UserId;
   displayName: string;
   color: number;
@@ -37,9 +38,9 @@ export type BoardModel = {
   id: number;
   lobbyId: number;
   boardData: BoardArray;
-  latestMove: Pos;
+  latestMove?: Pos;
   isGameEnd: boolean;
-  currentTurnPlayerId: UserId;
+  currentTurnUserId?: UserId;
   created: number;
   updated: number;
 };

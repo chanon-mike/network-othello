@@ -1,5 +1,5 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
-import type { PlayerModel, UserModel } from '$/commonTypesWithClient/models';
+import type { BoardModel, PlayerModel, UserModel } from '$/commonTypesWithClient/models';
 import { prismaClient } from '$/service/prismaClient';
 import type { Player } from '@prisma/client';
 import { boardRepository } from './boardRepository';
@@ -13,6 +13,7 @@ let currentPlayer: PlayerTurn = undefined;
 const toModel = (prismaPlayer: Player): PlayerModel => ({
   id: prismaPlayer.id,
   lobbyId: prismaPlayer.lobbyId,
+  boardId: prismaPlayer.boardId,
   userId: prismaPlayer.userId as UserId,
   displayName: prismaPlayer.displayName,
   color: prismaPlayer.color,
@@ -40,27 +41,58 @@ export const createPlayer = async (
       userId: user.id,
     },
   });
-
   if (existingPlayer) {
     // userId already exists, return an error response
     console.log('User already exist');
-    throw new Error('User already has a player');
-  } else {
-    // Create a player linked to a lobby id
-    const prismaPlayer = await prismaClient.player.create({
-      data: {
-        userId: user.id,
-        displayName: user.displayName ?? user.id,
-        color: playerRepository.getUserColor(user.id),
-        lobby: {
-          connect: {
-            id: lobbyId,
-          },
+    throw new Error('User already exist');
+  }
+
+  // Retrieve Player and Board from the lobby
+  const lobby = await prismaClient.lobby.findUnique({
+    where: {
+      id: lobbyId,
+    },
+    include: {
+      Board: true,
+      Player: true,
+    },
+  });
+  // Set a color of player to 1 if no one in lobby, else 2
+  const color = !lobby?.Player ? 1 : 2;
+
+  // Create a player linked to a lobby id
+  const prismaPlayer = await prismaClient.player.create({
+    data: {
+      userId: user.id,
+      displayName: user.displayName ?? user.id,
+      color,
+      lobby: {
+        connect: {
+          id: lobbyId,
         },
       },
-    });
-    return toModel(prismaPlayer);
+      board: {
+        connect: {
+          id: lobby?.Board?.id,
+        },
+      },
+    },
+  });
+  console.log(prismaPlayer);
+  return toModel(prismaPlayer);
+};
+
+export const getCurrentTurn = async (boardId: BoardModel['id']): Promise<PlayerTurn> => {
+  // Get current turn of the boardId, if undefined, set it to the first player userId
+  const prismaPlayer = await prismaClient.player.findMany({
+    where: { boardId },
+    include: { board: true },
+  });
+  let currentTurnUserId = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
+  if (prismaPlayer && currentTurnUserId === undefined) {
+    currentTurnUserId = prismaPlayer[0].userId as PlayerTurn;
   }
+  return currentTurnUserId;
 };
 
 export const playerRepository = {

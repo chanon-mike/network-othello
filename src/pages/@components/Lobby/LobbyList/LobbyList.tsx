@@ -10,7 +10,7 @@ export const LobbyList = ({ lobby }: LobbyProps) => {
   return (
     <>
       {lobby?.map((lb) => (
-        <Link key={lb.id} className={styles.room} href={'/othello'}>
+        <Link key={lb.id} className={styles.room} href={`/othello/${lb.id}`}>
           <h3>{lb.title}</h3>
           <h3>{lb.playerNum}/2</h3>
         </Link>
