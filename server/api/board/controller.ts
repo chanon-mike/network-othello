@@ -1,4 +1,4 @@
-import { boardRepository } from '$/repository/boardRepository';
+import { boardRepository } from '$/repository/board/boardRepository';
 import { defineController } from './$relay';
 
 export default defineController(() => ({

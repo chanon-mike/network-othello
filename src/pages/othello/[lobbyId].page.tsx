@@ -1,4 +1,4 @@
-import type { BoardArray, Pos } from '$/repository/boardRepository';
+import type { BoardArray, Pos } from '$/repository/board/boardRepository';
 import type { PlayerTurn } from '$/repository/playerRepository';
 import type { Score } from '$/repository/scoreRepository';
 import { useAtom } from 'jotai';
@@ -20,7 +20,6 @@ const Home = () => {
     const isValid = validMoveList.some((move) => move.x === x && move.y === y);
 
     if (isValid) {
-      // await apiClient.board.$post({ body: { x, y } });
       await apiClient.board._lobbyId(lobbyIdRef.current).$put({ body: { x, y } });
       await fetchBoard();
     }
@@ -55,6 +54,10 @@ const Home = () => {
         ._lobbyId(lobbyIdRef.current)
         .valid_move.$get();
       setValidMoveList(validMoveList);
+      // Set latest move
+      setLatestMove(response.board.latestMove);
+      // Set game status
+      setIsGameEnd(response.board.isGameEnd);
     }
   };
 
@@ -70,26 +73,12 @@ const Home = () => {
     setCurrentTurnPlayerId(response.currentTurnUserId);
   };
 
-  // GET latest move and set it (make both player see the same mark)
-  const fetchLatestMove = async () => {
-    const response = await apiClient.board.latest_move.$get();
-    setLatestMove(response.latestMove);
-  };
-
-  // GET is game end or not
-  const fetchGameStatus = async () => {
-    const response = await apiClient.board.game_end.$get();
-    setIsGameEnd(response.isGameEnd);
-  };
-
   // Fetch board every 0.5s to make it look real-time
   useEffect(() => {
     const cancelId = setInterval(() => {
       fetchBoard();
       fetchScore();
       fetchCurrentTurn();
-      fetchLatestMove();
-      fetchGameStatus();
     }, 500);
     return () => clearInterval(cancelId);
   }, []);

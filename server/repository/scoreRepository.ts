@@ -1,5 +1,5 @@
-import type { BoardArray } from './boardRepository';
-import { boardRepository } from './boardRepository';
+import type { BoardArray } from './board/boardRepository';
+import { boardRepository } from './board/boardRepository';
 
 export type Score = { blackScore: number; whiteScore: number };
 

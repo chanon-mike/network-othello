@@ -1,5 +1,4 @@
-import type { BoardModel } from '$/commonTypesWithClient/models';
-import type { BoardArray } from '$/repository/boardRepository';
+import type { BoardArray } from '$/repository/board/boardRepository';
 
 export type Methods = {
   get: {

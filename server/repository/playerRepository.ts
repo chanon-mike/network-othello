@@ -1,14 +1,11 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
 import type { BoardModel, PlayerModel, UserModel } from '$/commonTypesWithClient/models';
 import { prismaClient } from '$/service/prismaClient';
-import type { Player } from '@prisma/client';
-import { boardRepository } from './boardRepository';
+import type { Board, Player } from '@prisma/client';
+import { getValidMoves } from './board/boardRepository';
 
 export type UserColorDict = { black?: UserId; white?: UserId };
 export type PlayerTurn = UserId | undefined;
-
-const userColorDict: UserColorDict = {};
-let currentPlayer: PlayerTurn = undefined;
 
 const toModel = (prismaPlayer: Player): PlayerModel => ({
   id: prismaPlayer.id,
@@ -41,11 +38,8 @@ export const createPlayer = async (
       userId: user.id,
     },
   });
-  if (existingPlayer) {
-    // userId already exists, return an error response
-    console.log('User already exist');
-    throw new Error('User already exist');
-  }
+  // userId already exists, return existed player
+  if (existingPlayer) return toModel(existingPlayer);
 
   // Retrieve Player and Board from the lobby
   const lobby = await prismaClient.lobby.findUnique({
@@ -82,9 +76,32 @@ export const createPlayer = async (
   return toModel(prismaPlayer);
 };
 
-// export const joinLobby = async (lobbyId: PlayerModel['id']): Promise<PlayerModel> => {
-//   // Create a player when join lobby
-// }
+export const switchTurn = async (lobbyId: PlayerModel['id']): Promise<PlayerTurn> => {
+  // Fetch player in this lobby with board info
+  const prismaPlayer = await prismaClient.player.findMany({
+    where: { lobbyId },
+    include: {
+      board: true,
+    },
+  });
+  if (!prismaPlayer) throw new Error("User doesn't exist");
+
+  // Create a dict for userId for each color player
+  const userColorDict: UserColorDict = getUserColorDict(prismaPlayer);
+
+  // Switch to opponent turn if valid
+  const currentPlayerTurn: PlayerTurn = await switchTurnValidation(
+    lobbyId,
+    userColorDict,
+    prismaPlayer
+  );
+  await prismaClient.board.update({
+    where: { lobbyId },
+    data: { currentTurnUserId: currentPlayerTurn },
+  });
+
+  return currentPlayerTurn;
+};
 
 export const getCurrentTurn = async (lobbyId: BoardModel['id']): Promise<PlayerTurn> => {
   // Get current turn of the boardId, if undefined, set it to the first player userId
@@ -99,45 +116,34 @@ export const getCurrentTurn = async (lobbyId: BoardModel['id']): Promise<PlayerT
   return currentTurnUserId;
 };
 
-export const playerRepository = {
-  getUserColor: (userId: UserId): number => {
-    if (userColorDict.black === userId) {
-      return 1;
-    } else if (userColorDict.white === userId) {
-      return 2;
-    } else if (userColorDict.black === undefined) {
-      userColorDict.black = userId;
-      return 1;
-    } else {
-      userColorDict.white = userId;
-      return 2;
-    }
-  },
-  getCurrentPlayer: (): PlayerTurn => {
-    // Get current turn, for first move, black start first
-    if (currentPlayer === undefined) currentPlayer = userColorDict.black;
-    return currentPlayer;
-  },
-  setCurrentPlayer: (userId: PlayerTurn): void => {
-    // Set the current turn to player id
-    currentPlayer = userId;
-  },
-  getUserColorDict: (): UserColorDict => {
-    return userColorDict;
-  },
-  switchPlayerTurnWithValidation: (): PlayerTurn => {
-    // If current player can move and opponent can move too, switch to opponent turn and set to opponent turn
-    const opponentPlayer: PlayerTurn = switchTurn();
-    if (opponentPlayer && boardRepository.getValidMoves(opponentPlayer).length) {
-      currentPlayer = opponentPlayer;
-    }
-
-    return currentPlayer;
-  },
+export const getUserColorDict = (
+  prismaPlayer: (Player & {
+    board: Board;
+  })[]
+): UserColorDict => {
+  const userColorDict: UserColorDict = {};
+  prismaPlayer.forEach((player) => {
+    if (player.color === 1) userColorDict.black = player.userId as UserId;
+    else if (player.color === 2) userColorDict.white = player.userId as UserId;
+  });
+  return userColorDict;
 };
 
-// Helper function to switch player turn in dict
-const switchTurn = (): PlayerTurn => {
-  // Switch turn (black to white, white to black)
-  return currentPlayer === userColorDict.black ? userColorDict.white : userColorDict.black;
+const switchTurnValidation = async (
+  lobbyId: PlayerModel['lobbyId'],
+  userColorDict: UserColorDict,
+  prismaPlayer: (Player & {
+    board: Board;
+  })[]
+): Promise<PlayerTurn> => {
+  // If current player can move and opponent can move too, switch to opponent turn and set to opponent turn
+  let currentPlayerTurn: PlayerTurn = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
+  const opponentPlayerTurn: PlayerTurn =
+    currentPlayerTurn === userColorDict.black ? userColorDict.white : userColorDict.black;
+
+  if (opponentPlayerTurn && (await getValidMoves(lobbyId, opponentPlayerTurn)).length) {
+    currentPlayerTurn = opponentPlayerTurn;
+  }
+
+  return currentPlayerTurn;
 };

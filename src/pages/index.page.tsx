@@ -49,6 +49,11 @@ const Home = () => {
     setLobbyName('');
   };
 
+  const joinLobby = async (lobbyId: LobbyModel['id']) => {
+    const playerResponse = await apiClient.player._lobbyId(lobbyId).$post();
+    console.log(playerResponse);
+  };
+
   useEffect(() => {
     fetchLobby();
   }, []);
@@ -65,7 +70,7 @@ const Home = () => {
           createLobby={createLobby}
         />
         <div className={styles.title}>Go to othello game</div>
-        <LobbyList lobby={lobby} />
+        <LobbyList lobby={lobby} onClick={joinLobby} />
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { clickBoard, createBoard, getBoard } from '$/repository/boardRepository';
+import { clickBoard, createBoard, getBoard } from '$/repository/board/boardRepository';
 import { defineController } from './$relay';
 
 export default defineController(() => ({
@@ -10,5 +10,8 @@ export default defineController(() => ({
     status: 201,
     body: { board: await createBoard(lobbyId) },
   }),
-  put: async ({ body, params: { lobbyId }, user }) => ({ status: 204, body: { board: await clickBoard(lobbyId, body, user.id) } }),
+  put: async ({ body, params: { lobbyId }, user }) => ({
+    status: 200,
+    body: { board: await clickBoard(lobbyId, body, user.id) },
+  }),
 }));
