@@ -15,4 +15,13 @@ export type Methods = {
       lobby: LobbyModel;
     };
   };
+
+  put: {
+    query: {
+      lobbyId: number;
+    };
+    resBody: {
+      lobby: LobbyModel;
+    };
+  };
 };

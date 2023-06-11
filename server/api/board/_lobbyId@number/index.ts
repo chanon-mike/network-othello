@@ -12,4 +12,14 @@ export type Methods = {
       board: BoardModel;
     };
   };
+
+  put: {
+    reqBody: {
+      x: number;
+      y: number;
+    };
+    resBody: {
+      board: BoardModel;
+    };
+  };
 };

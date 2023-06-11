@@ -1,18 +1,23 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
-import type { BoardModel, PlayerModel } from '$/commonTypesWithClient/models';
+import type { BoardModel, LobbyModel, PlayerModel } from '$/commonTypesWithClient/models';
 import { prismaClient } from '$/service/prismaClient';
 import type { Board } from '@prisma/client';
-import { playerRepository } from './playerRepository';
+import { getCurrentTurn, playerRepository } from './playerRepository';
 
 export type BoardArray = number[][];
 export type Pos = { x: number; y: number };
 
-// const toModel = (primaBoard: Board): TaskModel => ({
-//   id: taskIdParser.parse(prismaTask.id),
-//   label: prismaTask.label,
-//   done: prismaTask.done,
-//   created: prismaTask.createdAt.getTime(),
-// });
+// Inital board
+const initialBoard: BoardArray = [
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 1, 2, 0, 0, 0],
+  [0, 0, 0, 2, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+];
 
 const board: BoardArray = [
   [0, 0, 0, 0, 0, 0, 0, 0],
@@ -24,6 +29,7 @@ const board: BoardArray = [
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
 ];
+let latestMove: Pos;
 
 const directions = [
   [-1, 0], // Up
@@ -35,8 +41,6 @@ const directions = [
   [0, -1], // Left
   [-1, -1], // Up-Left
 ];
-
-let latestMove: Pos;
 
 const toModel = (prismaBoard: Board): BoardModel => ({
   id: prismaBoard.id,
@@ -61,18 +65,6 @@ export const getBoard = async (lobbyId: PlayerModel['lobbyId']): Promise<BoardMo
 };
 
 export const createBoard = async (lobbyId: PlayerModel['lobbyId']): Promise<BoardModel> => {
-  // Inital board
-  const initialBoard: BoardArray = [
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0, 0],
-    [0, 0, 0, 2, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
   // Create a new board
   const prismaBoard = await prismaClient.board.create({
     data: {
@@ -93,35 +85,84 @@ export const createBoard = async (lobbyId: PlayerModel['lobbyId']): Promise<Boar
   return toModel(prismaBoard);
 };
 
-// export const clickBoard = async (
-//   lobbyId: PlayerModel['lobbyId'],
-//   params: Pos,
-//   userId: UserId
-// ): Promise<BoardArray> => {
-//   const prismaBoard = await prismaClient.board.findFirst({ where: { lobbyId } });
-//   if (!prismaBoard) throw new Error("Board doesn't exist");
-//   const currentPlayer = prismaBoard?.currentTurnPlayerId;
+export const clickBoard = async (
+  lobbyId: PlayerModel['lobbyId'],
+  params: Pos,
+  userId: UserId
+): Promise<BoardModel> => {
+  // Get current board and current player
+  const prismaBoard = await prismaClient.board.findFirst({ where: { lobbyId } });
+  if (!prismaBoard) throw new Error("Board doesn't exist");
+  const boardData: BoardArray = prismaBoard.boardData as BoardArray;
 
-//   // const currentPlayer = playerRepository.getCurrentPlayer();
-//   // Place disc and flip disc if current turn is current player
-//   if (currentPlayer === userId) {
-//     const userColor = playerRepository.getUserColor(userId);
+  const currentTurnUserId = await getCurrentTurn(prismaBoard.lobbyId);
+  const prismaPlayer = await prismaClient.player.findFirst({
+    where: {
+      userId: currentTurnUserId,
+      lobbyId,
+    },
+  });
+  if (!prismaPlayer) throw new Error("Player doesn't exist");
 
-//     latestMove = { x: params.x, y: params.y };
-//     board[params.y][params.x] = userColor;
-//     directions.forEach((direction) => {
-//       const [dx, dy] = direction;
-//       const newX = params.x + dx;
-//       const newY = params.y + dy;
-//       if (isValidMove(newX, newY, dx, dy, userColor)) flipDisc(newX, newY, dx, dy, userColor);
-//     });
+  // Place disc and flip disc if current turn is current player
+  if (currentTurnUserId === userId) {
+    const userColor = prismaPlayer.color;
+    const latestMove = { x: params.x, y: params.y };
 
-//     // Switch to opponent turn if valid
-//     playerRepository.setCurrentPlayer(playerRepository.switchPlayerTurnWithValidation());
-//   }
+    boardData[params.y][params.x] = userColor;
+    directions.forEach((direction) => {
+      const [dx, dy] = direction;
+      const newX = params.x + dx;
+      const newY = params.y + dy;
+      if (isValidMove(newX, newY, dx, dy, userColor, boardData))
+        flipDisc(newX, newY, dx, dy, userColor, boardData);
+    });
 
-//   return board;
-// };
+    // Switch to opponent turn and update board if valid
+    await prismaClient.board.update({
+      where: { lobbyId },
+      data: { boardData, currentTurnUserId, latestMove },
+    });
+  }
+  return toModel(prismaBoard);
+};
+
+export const getValidMoves = async (lobbyId: LobbyModel['id'], userId: UserId): Promise<Pos[]> => {
+  // Get current board and current player
+  const prismaBoard = await prismaClient.board.findFirst({ where: { lobbyId } });
+  if (!prismaBoard) throw new Error("Board doesn't exist");
+  const boardData: BoardArray = prismaBoard.boardData as BoardArray;
+
+  const prismaPlayer = await prismaClient.player.findFirst({
+    where: {
+      userId,
+      lobbyId,
+    },
+  });
+  if (!prismaPlayer) throw new Error("Player doesn't exist");
+
+  // Get a list of valid moves
+  const validMoves: Pos[] = [];
+  const userColor = prismaPlayer.color;
+
+  // Loop through each cell in the board and find valid moves
+  boardData.forEach((row, y) =>
+    row.forEach((_, x) => {
+      boardData[y][x] === 0 &&
+        directions.forEach((direction) => {
+          const [dx, dy] = direction;
+          const newX = x + dx;
+          const newY = y + dy;
+
+          if (isValidMove(newX, newY, dx, dy, userColor, boardData)) {
+            validMoves.push({ x, y });
+          }
+        });
+    })
+  );
+
+  return validMoves;
+};
 
 export const boardRepository = {
   getBoard: (): BoardArray => board,
@@ -137,7 +178,8 @@ export const boardRepository = {
         const [dx, dy] = direction;
         const newX = params.x + dx;
         const newY = params.y + dy;
-        if (isValidMove(newX, newY, dx, dy, userColor)) flipDisc(newX, newY, dx, dy, userColor);
+        if (isValidMove(newX, newY, dx, dy, userColor, board))
+          flipDisc(newX, newY, dx, dy, userColor, board);
       });
 
       // Switch to opponent turn if valid
@@ -160,7 +202,7 @@ export const boardRepository = {
             const newX = x + dx;
             const newY = y + dy;
 
-            if (isValidMove(newX, newY, dx, dy, userColor)) {
+            if (isValidMove(newX, newY, dx, dy, userColor, board)) {
               validMoves.push({ x, y });
             }
           });
@@ -208,7 +250,7 @@ export const boardRepository = {
 };
 
 // If the position is within the board boundaries
-const isInsideBoard = (x: number, y: number): boolean => {
+const isInsideBoard = (x: number, y: number, board: BoardArray): boolean => {
   return x >= 0 && x < board[0].length && y >= 0 && y < board.length;
 };
 
@@ -218,9 +260,10 @@ const isSameColorInLine = (
   y: number,
   dx: number,
   dy: number,
-  userColor: number
+  userColor: number,
+  board: BoardArray
 ): boolean => {
-  while (isInsideBoard(x, y)) {
+  while (isInsideBoard(x, y, board)) {
     const currDisc = board[y][x];
 
     if (currDisc === 0) {
@@ -236,19 +279,33 @@ const isSameColorInLine = (
 };
 
 // Check if the move is valid or not
-const isValidMove = (x: number, y: number, dx: number, dy: number, userColor: number): boolean => {
-  if (isInsideBoard(x, y) && board[y][x] !== 0 && board[y][x] !== userColor) {
+const isValidMove = (
+  x: number,
+  y: number,
+  dx: number,
+  dy: number,
+  userColor: number,
+  board: BoardArray
+): boolean => {
+  if (isInsideBoard(x, y, board) && board[y][x] !== 0 && board[y][x] !== userColor) {
     const currX = x + dx;
     const currY = y + dy;
 
     // Return true if there are same color discs between new disc and another disc, else false
-    return isSameColorInLine(currX, currY, dx, dy, userColor);
+    return isSameColorInLine(currX, currY, dx, dy, userColor, board);
   }
   return false;
 };
 
 // function to flip disc after place a new one
-const flipDisc = (x: number, y: number, dx: number, dy: number, userColor: number): void => {
+const flipDisc = (
+  x: number,
+  y: number,
+  dx: number,
+  dy: number,
+  userColor: number,
+  board: BoardArray
+): void => {
   let currX = x;
   let currY = y;
 

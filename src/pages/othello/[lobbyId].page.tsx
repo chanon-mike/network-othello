@@ -21,6 +21,7 @@ const Home = () => {
 
     if (isValid) {
       // await apiClient.board.$post({ body: { x, y } });
+      await apiClient.board._lobbyId(lobbyIdRef.current).$put({ body: { x, y } });
       await fetchBoard();
     }
   };
@@ -50,7 +51,9 @@ const Home = () => {
     if (response !== null) {
       setBoard(response.board.boardData);
       // Add a list of valid moves
-      const validMoveList: Pos[] = await apiClient.board.valid_move.$get();
+      const validMoveList: Pos[] = await apiClient.board
+        ._lobbyId(lobbyIdRef.current)
+        .valid_move.$get();
       setValidMoveList(validMoveList);
     }
   };
@@ -63,8 +66,8 @@ const Home = () => {
 
   // GET current player turn id (for displaying valid moves)
   const fetchCurrentTurn = async () => {
-    const response = await apiClient.player.$get();
-    setCurrentTurnPlayerId(response.currentPlayerId);
+    const response = await apiClient.player._lobbyId(lobbyIdRef.current).turn.$get();
+    setCurrentTurnPlayerId(response.currentTurnUserId);
   };
 
   // GET latest move and set it (make both player see the same mark)

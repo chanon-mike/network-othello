@@ -58,7 +58,7 @@ export const createPlayer = async (
     },
   });
   // Set a color of player to 1 if no one in lobby, else 2
-  const color = !lobby?.Player ? 1 : 2;
+  const color = lobby && !lobby.Player ? 1 : 2;
 
   // Create a player linked to a lobby id
   const prismaPlayer = await prismaClient.player.create({
@@ -82,14 +82,18 @@ export const createPlayer = async (
   return toModel(prismaPlayer);
 };
 
-export const getCurrentTurn = async (boardId: BoardModel['id']): Promise<PlayerTurn> => {
+// export const joinLobby = async (lobbyId: PlayerModel['id']): Promise<PlayerModel> => {
+//   // Create a player when join lobby
+// }
+
+export const getCurrentTurn = async (lobbyId: BoardModel['id']): Promise<PlayerTurn> => {
   // Get current turn of the boardId, if undefined, set it to the first player userId
   const prismaPlayer = await prismaClient.player.findMany({
-    where: { boardId },
+    where: { lobbyId },
     include: { board: true },
   });
   let currentTurnUserId = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
-  if (prismaPlayer && currentTurnUserId === undefined) {
+  if (prismaPlayer && (!currentTurnUserId || currentTurnUserId === undefined)) {
     currentTurnUserId = prismaPlayer[0].userId as PlayerTurn;
   }
   return currentTurnUserId;
