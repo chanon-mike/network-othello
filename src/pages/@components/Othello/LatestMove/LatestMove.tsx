@@ -1,4 +1,4 @@
-import type { Pos } from '$/repository/boardRepository';
+import type { Pos } from '$/repository/board/boardRepository';
 import styles from './LatestMove.module.css';
 
 type LatestMoveProps = {

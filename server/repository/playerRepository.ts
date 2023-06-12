@@ -52,7 +52,7 @@ export const createPlayer = async (
     },
   });
   // Set a color of player to 1 if no one in lobby, else 2
-  const color = lobby && !lobby.Player ? 1 : 2;
+  const color = lobby && lobby.Player.length === 0 ? 1 : 2;
 
   // Create a player linked to a lobby id
   const prismaPlayer = await prismaClient.player.create({
@@ -72,7 +72,6 @@ export const createPlayer = async (
       },
     },
   });
-  console.log(prismaPlayer);
   return toModel(prismaPlayer);
 };
 
@@ -138,12 +137,14 @@ const switchTurnValidation = async (
 ): Promise<PlayerTurn> => {
   // If current player can move and opponent can move too, switch to opponent turn and set to opponent turn
   let currentPlayerTurn: PlayerTurn = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
+  // Next turn is white turn if it the first turn
+  if (currentPlayerTurn === null) return userColorDict.white;
+
   const opponentPlayerTurn: PlayerTurn =
     currentPlayerTurn === userColorDict.black ? userColorDict.white : userColorDict.black;
 
   if (opponentPlayerTurn && (await getValidMoves(lobbyId, opponentPlayerTurn)).length) {
     currentPlayerTurn = opponentPlayerTurn;
   }
-
   return currentPlayerTurn;
 };

@@ -16,6 +16,7 @@ export const getAllLobby = async (): Promise<LobbyModel[]> => {
       Player: true,
     },
   });
+  if (!prismaLobby) return [];
 
   return prismaLobby.map(toModel);
 };

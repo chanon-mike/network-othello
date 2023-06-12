@@ -1,4 +1,4 @@
-import type { Pos } from '$/repository/boardRepository';
+import type { Pos } from '$/repository/board/boardRepository';
 import type { Score } from '$/repository/scoreRepository';
 import GameEndModal from './GameEndModal/GameEndModal';
 import NoMoveModal from './NoMoveModal/NoMoveModal';

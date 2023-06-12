@@ -1,5 +1,5 @@
 import type { UserModel } from '$/commonTypesWithClient/models';
-import type { BoardArray, Pos } from '$/repository/boardRepository';
+import type { BoardArray, Pos } from '$/repository/board/boardRepository';
 import type { PlayerTurn } from '$/repository/playerRepository';
 import Disc from '../Disc/Disc';
 import styles from './Board.module.css';
