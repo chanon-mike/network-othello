@@ -98,14 +98,21 @@ export const clickBoard = async (
         flipDisc(newX, newY, dx, dy, userColor, boardData);
     });
 
+    // Update board first before other function is getting a data
+    await prismaClient.board.update({
+      where: { lobbyId },
+      data: { boardData },
+    });
     // Set new score for each player
     await setScore(lobbyId);
 
+    // Check if game end or not
+    const isGameEnd = await isGameFinish(lobbyId);
     // Switch to opponent turn and update board if valid
     currentTurnUserId = await switchTurn(lobbyId);
     await prismaClient.board.update({
       where: { lobbyId },
-      data: { boardData, currentTurnUserId, latestMove },
+      data: { boardData, currentTurnUserId, latestMove, isGameEnd },
     });
   }
   return toModel(prismaBoard);
@@ -129,7 +136,6 @@ export const getValidMoves = async (lobbyId: BoardModel['id'], userId: UserId): 
           const [dx, dy] = direction;
           const newX = x + dx;
           const newY = y + dy;
-
           if (isValidMove(newX, newY, dx, dy, userColor, boardData)) {
             validMoves.push({ x, y });
           }
@@ -140,7 +146,7 @@ export const getValidMoves = async (lobbyId: BoardModel['id'], userId: UserId): 
   return validMoves;
 };
 
-export const isGameEnd = async (lobbyId: BoardModel['id']): Promise<boolean> => {
+const isGameFinish = async (lobbyId: BoardModel['id']): Promise<boolean> => {
   // Fetch player in this lobby with board info
   const prismaPlayer = await prismaClient.player.findMany({
     where: { lobbyId },
@@ -174,4 +180,5 @@ export const resetBoard = async (lobbyId: BoardModel['lobbyId']): Promise<void> 
       currentTurnUserId: undefined,
     },
   });
+  setScore(lobbyId);
 };

@@ -63,11 +63,14 @@ const Home = () => {
 
   // GET score
   const fetchScore = async () => {
-    const response = await apiClient.player
-      ._lobbyId(lobbyIdRef.current)
-      .score.$get()
-      .catch(returnNull);
-    if (response !== null) setScore(response);
+    const response = await apiClient.player._lobbyId(lobbyIdRef.current).$get();
+    if (response !== null) {
+      const blackScore =
+        response.player[0].color === 1 ? response.player[0].score : response.player[1].score;
+      const whiteScore =
+        response.player[0].color === 2 ? response.player[0].score : response.player[1].score;
+      setScore({ blackScore, whiteScore });
+    }
   };
 
   // GET current player turn id (for displaying valid moves)
@@ -93,7 +96,7 @@ const Home = () => {
       <BasicHeader user={user} />
       <div className={styles.container}>
         <div className={styles.row}>
-          <ScoreBorder score={score} backgroundColor={'#000'} />
+          <ScoreBorder score={score} color={1} backgroundColor={'#000'} />
 
           <Board
             user={user}
@@ -104,13 +107,13 @@ const Home = () => {
             onClick={onClick}
           />
           <Modal
-            validMoveList={validMoveList}
+            // validMoveList={validMoveList}
             isGameEnd={isGameEnd}
             score={score}
             lobbyId={lobbyIdRef.current}
           />
 
-          <ScoreBorder score={score} backgroundColor={'#fff'} />
+          <ScoreBorder score={score} color={2} backgroundColor={'#fff'} />
         </div>
       </div>
     </>

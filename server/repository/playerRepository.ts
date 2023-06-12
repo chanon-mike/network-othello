@@ -14,6 +14,7 @@ const toModel = (prismaPlayer: Player): PlayerModel => ({
   userId: prismaPlayer.userId as UserId,
   displayName: prismaPlayer.displayName,
   color: prismaPlayer.color,
+  score: prismaPlayer.score,
   created: prismaPlayer.createdAt.getTime(),
 });
 
@@ -85,15 +86,8 @@ export const switchTurn = async (lobbyId: PlayerModel['id']): Promise<PlayerTurn
   });
   if (!prismaPlayer) throw new Error("User doesn't exist");
 
-  // Create a dict for userId for each color player
-  const userColorDict: UserColorDict = await getUserColorDict(lobbyId);
-
   // Switch to opponent turn if valid
-  const currentPlayerTurn: PlayerTurn = await switchTurnValidation(
-    lobbyId,
-    userColorDict,
-    prismaPlayer
-  );
+  const currentPlayerTurn: PlayerTurn = await switchTurnValidation(lobbyId, prismaPlayer);
   await prismaClient.board.update({
     where: { lobbyId },
     data: { currentTurnUserId: currentPlayerTurn },
@@ -135,21 +129,27 @@ export const getUserColorDict = async (lobbyId: PlayerModel['lobbyId']): Promise
 
 const switchTurnValidation = async (
   lobbyId: PlayerModel['lobbyId'],
-  userColorDict: UserColorDict,
   prismaPlayer: (Player & {
     board: Board;
   })[]
 ): Promise<PlayerTurn> => {
+  const userColorDict = await getUserColorDict(lobbyId);
+  const blackUserId = userColorDict.black;
+  const whiteUserId = userColorDict.white;
   // If current player can move and opponent can move too, switch to opponent turn and set to opponent turn
   let currentPlayerTurn: PlayerTurn = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
-  // Next turn is white turn if it the first turn
-  if (currentPlayerTurn === null) return userColorDict.white;
+
+  // Next turn is white turn if it the first turn (BUG)
+  if (currentPlayerTurn === null) return blackUserId;
 
   const opponentPlayerTurn: PlayerTurn =
-    currentPlayerTurn === userColorDict.black ? userColorDict.white : userColorDict.black;
+    currentPlayerTurn === blackUserId ? whiteUserId : blackUserId;
 
+  // If opponent can move, pass turn to opponent
+  // If opponent can't move, your turn
   if (opponentPlayerTurn && (await getValidMoves(lobbyId, opponentPlayerTurn)).length) {
     currentPlayerTurn = opponentPlayerTurn;
   }
+
   return currentPlayerTurn;
 };

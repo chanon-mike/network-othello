@@ -28,6 +28,7 @@ export const isValidMove = (
   board: BoardArray
 ): boolean => {
   if (isInsideBoard(x, y, board) && board[y][x] !== 0 && board[y][x] !== userColor) {
+    // console.log('color', userColor, 'x', x, 'y', y);
     const currX = x + dx;
     const currY = y + dy;
 
@@ -76,6 +77,7 @@ const isSameColorInLine = (
     if (currDisc === 0) {
       return false;
     } else if (currDisc === userColor) {
+      // console.log('color', userColor, 'true', 'x', x, 'y', y);
       return true;
     }
 

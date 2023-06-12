@@ -4,10 +4,11 @@ import styles from './ScoreBorder.module.css';
 
 type ScoreBorderProps = {
   score: Score;
+  color: number;
   backgroundColor: string;
 };
 
-export const ScoreBorder = ({ score, backgroundColor }: ScoreBorderProps) => {
+export const ScoreBorder = ({ score, color, backgroundColor }: ScoreBorderProps) => {
   const discStyle = {
     backgroundColor,
   };
@@ -15,7 +16,7 @@ export const ScoreBorder = ({ score, backgroundColor }: ScoreBorderProps) => {
   return (
     <div className={styles.scoreBorder}>
       <Disc showLatestMove={false} style={discStyle} />{' '}
-      <span className={styles.score}>x{score.blackScore}</span>
+      <span className={styles.score}>x{color === 1 ? score.blackScore : score.whiteScore}</span>
     </div>
   );
 };

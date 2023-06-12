@@ -31,6 +31,7 @@ export type PlayerModel = {
   userId: UserId;
   displayName: string;
   color: number;
+  score: number;
   created: number;
 };
 
