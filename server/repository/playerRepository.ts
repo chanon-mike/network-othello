@@ -86,7 +86,7 @@ export const switchTurn = async (lobbyId: PlayerModel['id']): Promise<PlayerTurn
   if (!prismaPlayer) throw new Error("User doesn't exist");
 
   // Create a dict for userId for each color player
-  const userColorDict: UserColorDict = getUserColorDict(prismaPlayer);
+  const userColorDict: UserColorDict = await getUserColorDict(lobbyId);
 
   // Switch to opponent turn if valid
   const currentPlayerTurn: PlayerTurn = await switchTurnValidation(
@@ -115,11 +115,16 @@ export const getCurrentTurn = async (lobbyId: BoardModel['id']): Promise<PlayerT
   return currentTurnUserId;
 };
 
-export const getUserColorDict = (
-  prismaPlayer: (Player & {
-    board: Board;
-  })[]
-): UserColorDict => {
+export const getUserColorDict = async (lobbyId: PlayerModel['lobbyId']): Promise<UserColorDict> => {
+  // Assign each userId to the color
+  const prismaPlayer = await prismaClient.player.findMany({
+    where: { lobbyId },
+    include: {
+      board: true,
+    },
+  });
+  if (!prismaPlayer) throw new Error("User doesn't exist");
+
   const userColorDict: UserColorDict = {};
   prismaPlayer.forEach((player) => {
     if (player.color === 1) userColorDict.black = player.userId as UserId;

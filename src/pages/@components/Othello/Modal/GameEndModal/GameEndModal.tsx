@@ -5,9 +5,10 @@ import styles from '../Modal.module.css';
 
 type GameEndModalProps = {
   score: Score;
+  lobbyId: number;
 };
 
-export const GameEndModal = ({ score }: GameEndModalProps) => {
+export const GameEndModal = ({ score, lobbyId }: GameEndModalProps) => {
   const blackDiscStyle = {
     backgroundColor: '#000',
   };
@@ -30,7 +31,10 @@ export const GameEndModal = ({ score }: GameEndModalProps) => {
           ? 'WHITE WIN'
           : 'TIE'}
       </p>
-      <button className={styles.close} onClick={async () => await apiClient.board.restart.$put()}>
+      <button
+        className={styles.close}
+        onClick={async () => await apiClient.board._lobbyId(lobbyId).restart.$put()}
+      >
         Restart
       </button>
     </div>

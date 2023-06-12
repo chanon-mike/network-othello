@@ -63,7 +63,10 @@ const Home = () => {
 
   // GET score
   const fetchScore = async () => {
-    const response = await apiClient.score.$get().catch(returnNull);
+    const response = await apiClient.player
+      ._lobbyId(lobbyIdRef.current)
+      .score.$get()
+      .catch(returnNull);
     if (response !== null) setScore(response);
   };
 
@@ -100,7 +103,12 @@ const Home = () => {
             validMoveList={validMoveList}
             onClick={onClick}
           />
-          <Modal validMoveList={validMoveList} isGameEnd={isGameEnd} score={score} />
+          <Modal
+            validMoveList={validMoveList}
+            isGameEnd={isGameEnd}
+            score={score}
+            lobbyId={lobbyIdRef.current}
+          />
 
           <ScoreBorder score={score} backgroundColor={'#fff'} />
         </div>

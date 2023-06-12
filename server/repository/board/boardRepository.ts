@@ -3,6 +3,7 @@ import type { BoardModel } from '$/commonTypesWithClient/models';
 import { prismaClient } from '$/service/prismaClient';
 import type { Board } from '@prisma/client';
 import { getCurrentTurn, getUserColorDict, switchTurn } from '../playerRepository';
+import { setScore } from '../scoreRepository';
 import { flipDisc, getBoardByLobbyId, getPlayerByUserId, isValidMove } from './boardUtils';
 
 export type BoardArray = number[][];
@@ -97,6 +98,9 @@ export const clickBoard = async (
         flipDisc(newX, newY, dx, dy, userColor, boardData);
     });
 
+    // Set new score for each player
+    await setScore(lobbyId);
+
     // Switch to opponent turn and update board if valid
     currentTurnUserId = await switchTurn(lobbyId);
     await prismaClient.board.update({
@@ -146,7 +150,7 @@ export const isGameEnd = async (lobbyId: BoardModel['id']): Promise<boolean> => 
   });
   if (!prismaPlayer) throw new Error("User doesn't exist");
 
-  const userColorDict = getUserColorDict(prismaPlayer);
+  const userColorDict = await getUserColorDict(lobbyId);
   const blackUserId = userColorDict.black;
   const whiteUserId = userColorDict.white;
 
