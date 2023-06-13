@@ -64,7 +64,7 @@ const Home = () => {
   // GET score
   const fetchScore = async () => {
     const response = await apiClient.player._lobbyId(lobbyIdRef.current).$get();
-    if (response !== null) {
+    if (response !== null && response.player.length === 2) {
       const blackScore =
         response.player[0].color === 1 ? response.player[0].score : response.player[1].score;
       const whiteScore =

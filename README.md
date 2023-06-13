@@ -4,7 +4,8 @@
 
 [] User cannot create new lobby when they already create or play in other lobby (room)
 [] Make 3rd player cannot join the lobby (currently 3rd plyaer onward will be white color and game may crash)
-[] NO MORE MOVES modal should only appear when player turn is current turn (If current turn === user turn as condition, player will see a modal glimpsy each turn which is very bad for ui & ux)
+[] NO MORE MOVES modal should only appear when player turn is current turn (If current turn === user turn as condition, player will see a modal glimpsy each turn which is very bad for ui & ux) (Disable for now)
+[] When white end the game, the game restart with white as a first turn.
 
 ## Settings
 
