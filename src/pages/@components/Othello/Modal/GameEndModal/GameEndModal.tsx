@@ -1,11 +1,12 @@
-import type { Score } from '$/repository/scoreRepository';
+import type { LobbyId } from '$/commonTypesWithClient/branded';
+import type { Score } from '$/repository/playerRepository';
 import { apiClient } from 'src/utils/apiClient';
 import Disc from '../../Disc/Disc';
 import styles from '../Modal.module.css';
 
 type GameEndModalProps = {
   score: Score;
-  lobbyId: number;
+  lobbyId: LobbyId;
 };
 
 export const GameEndModal = ({ score, lobbyId }: GameEndModalProps) => {

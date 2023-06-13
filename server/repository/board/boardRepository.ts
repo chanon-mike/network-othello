@@ -9,14 +9,17 @@ export type Pos = { x: number; y: number };
 
 const toModel = (prismaBoard: Board): BoardModel => ({
   id: lobbyIdParser.parse(prismaBoard.id),
-  lobbyName: z.string().parse(prismaBoard.lobbyName),
+  lobbyName: prismaBoard.lobbyName !== null ? z.string().parse(prismaBoard.lobbyName) : '',
   boardData: z.array(z.array(z.number())).parse(prismaBoard.boardData),
-  latestMove: z
-    .object({
-      x: z.number(),
-      y: z.number(),
-    })
-    .parse(prismaBoard.latestMove),
+  latestMove:
+    prismaBoard.latestMove !== null
+      ? z
+          .object({
+            x: z.number(),
+            y: z.number(),
+          })
+          .parse(prismaBoard.latestMove)
+      : undefined,
   isGameEnd: prismaBoard.isGameEnd,
   currentTurnUserId: UserIdParser.parse(prismaBoard.currentTurnUserId),
   created: prismaBoard.createdAt.getTime(),
@@ -34,6 +37,7 @@ export const boardRepository = {
       },
       create: {
         id: board.id,
+        lobbyName: board.lobbyName,
         boardData: board.boardData,
         latestMove: board.latestMove,
         isGameEnd: board.isGameEnd,
@@ -43,22 +47,22 @@ export const boardRepository = {
     });
   },
   getAll: async (): Promise<BoardModel[]> => {
-    // Get all lobby data
-    const board = await prismaClient.board.findMany({
-      include: {
-        playerList: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (!board) return [];
-    return board.map(toModel);
+    try {
+      // Get all lobby data
+      const board = await prismaClient.board.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+      if (!board) return [];
+
+      return board.map(toModel);
+    } catch (error) {
+      console.error('An error occurred while creating the board:', error);
+      throw error;
+    }
   },
   getCurrent: async (lobbyId: string): Promise<BoardModel> => {
     const board = await prismaClient.board.findFirst({
       where: { id: lobbyId },
-      include: {
-        playerList: true,
-      },
     });
     if (!board) throw new Error("Board doesn't exist");
     return toModel(board);

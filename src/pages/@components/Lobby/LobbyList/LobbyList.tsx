@@ -1,10 +1,10 @@
-import type { LobbyModel } from '$/commonTypesWithClient/models';
 import Link from 'next/link';
+import type { ExtendedBoardModel } from 'src/pages/index.page';
 import styles from './LobbyList.module.css';
 
 type LobbyProps = {
-  lobby: LobbyModel[] | undefined;
-  onClick: (lobbyId: LobbyModel['id']) => Promise<void>;
+  lobby: ExtendedBoardModel[] | undefined;
+  onClick: (lobbyId: string) => Promise<void>;
 };
 
 export const LobbyList = ({ lobby, onClick }: LobbyProps) => {
@@ -17,7 +17,7 @@ export const LobbyList = ({ lobby, onClick }: LobbyProps) => {
           href={`/othello/${lb.id}`}
           onClick={() => onClick(lb.id)}
         >
-          <h3>{lb.title}</h3>
+          <h3>{lb.lobbyName}</h3>
           <h3>{lb.playerNum}/2</h3>
         </Link>
       ))}

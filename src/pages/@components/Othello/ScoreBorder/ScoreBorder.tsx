@@ -1,4 +1,4 @@
-import type { Score } from '$/repository/scoreRepository';
+import type { Score } from '$/repository/playerRepository';
 import Disc from '../Disc/Disc';
 import styles from './ScoreBorder.module.css';
 

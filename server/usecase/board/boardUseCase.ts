@@ -32,16 +32,16 @@ const directions = [
 export const boardUseCase = {
   create: async (lobbyName: string, userId: UserId): Promise<BoardModel> => {
     const newBoard: BoardModel = {
-      id: lobbyIdParser.parse(randomUUID),
+      id: lobbyIdParser.parse(randomUUID()),
       lobbyName,
       boardData: initBoard(),
-      latestMove: undefined,
+      latestMove: { x: 0, y: 0 },
       isGameEnd: false,
       currentTurnUserId: userId,
       created: Date.now(),
     };
+    console.log(newBoard);
     // Right now when create board, current user need to be pass, so maybe create board before player
-
     await boardRepository.save(newBoard);
 
     return newBoard;

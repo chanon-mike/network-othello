@@ -1,4 +1,3 @@
-import type { UserId } from '$/commonTypesWithClient/branded';
 import type { BoardModel } from '$/commonTypesWithClient/models';
 
 export type Methods = {
@@ -8,7 +7,6 @@ export type Methods = {
   post: {
     reqBody: {
       lobbyName: BoardModel['lobbyName'];
-      userId: UserId;
     };
     resBody: BoardModel;
   };

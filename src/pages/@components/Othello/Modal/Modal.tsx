@@ -1,11 +1,12 @@
-import type { Score } from '$/repository/scoreRepository';
+import type { LobbyId } from '$/commonTypesWithClient/branded';
+import type { Score } from '$/repository/playerRepository';
 import GameEndModal from './GameEndModal/GameEndModal';
 
 type ModalProps = {
   // validMoveList: Pos[];
   isGameEnd: boolean;
   score: Score;
-  lobbyId: number;
+  lobbyId: LobbyId;
 };
 
 export const Modal = ({ isGameEnd, score, lobbyId }: ModalProps) => {

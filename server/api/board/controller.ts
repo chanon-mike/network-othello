@@ -7,8 +7,8 @@ export default defineController(() => ({
     status: 200,
     body: await boardRepository.getAll(),
   }),
-  post: async ({ body }) => ({
+  post: async ({ body, user }) => ({
     status: 201,
-    body: await boardUseCase.create(body.lobbyName, body.userId),
+    body: await boardUseCase.create(body.lobbyName, user.id),
   }),
 }));

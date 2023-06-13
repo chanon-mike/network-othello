@@ -1,6 +1,7 @@
+import type { LobbyId } from '$/commonTypesWithClient/branded';
 import type { BoardArray, Pos } from '$/repository/board/boardRepository';
-import type { PlayerTurn } from '$/repository/playerRepository';
-import type { Score } from '$/repository/scoreRepository';
+import type { PlayerTurn, Score } from '$/repository/playerRepository';
+import { lobbyIdParser } from '$/service/idParsers';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
@@ -36,28 +37,30 @@ const Home = () => {
   // Route handler data
   const router = useRouter();
   const { lobbyId } = router.query;
-  const lobbyIdRef = useRef<number>(parseInt(lobbyId as string, 10));
+  const lobbyIdRef = useRef<LobbyId>(lobbyIdParser.parse(lobbyId));
 
   // Update lobbyIdRef whenever lobbyId change
   useEffect(() => {
-    lobbyIdRef.current = parseInt(lobbyId as string, 10);
+    lobbyIdRef.current = lobbyIdParser.parse(lobbyId);
   }, [lobbyId]);
 
   // GET board and GET list of valid move
   const fetchBoard = async () => {
-    const response = await apiClient.board._lobbyId(lobbyIdRef.current).$get().catch(returnNull);
+    const board = await apiClient.board._lobbyId(lobbyIdRef.current).$get().catch(returnNull);
 
-    if (response !== null) {
-      setBoard(response.board.boardData);
+    if (board !== null) {
+      setBoard(board.boardData);
       // Add a list of valid moves
       const validMoveList: Pos[] = await apiClient.board
         ._lobbyId(lobbyIdRef.current)
         .valid_move.$get();
       setValidMoveList(validMoveList);
       // Set latest move
-      setLatestMove(response.board.latestMove);
+      setLatestMove(board.latestMove);
       // Set game status
-      setIsGameEnd(response.board.isGameEnd);
+      setIsGameEnd(board.isGameEnd);
+      // Get current turn user id
+      setCurrentTurnPlayerId(board.currentTurnUserId);
     }
   };
 
@@ -73,18 +76,11 @@ const Home = () => {
     }
   };
 
-  // GET current player turn id (for displaying valid moves)
-  const fetchCurrentTurn = async () => {
-    const response = await apiClient.player._lobbyId(lobbyIdRef.current).turn.$get();
-    setCurrentTurnPlayerId(response.currentTurnUserId);
-  };
-
   // Fetch board every 0.5s to make it look real-time
   useEffect(() => {
     const cancelId = setInterval(() => {
       fetchBoard();
       fetchScore();
-      fetchCurrentTurn();
     }, 500);
     return () => clearInterval(cancelId);
   }, []);
