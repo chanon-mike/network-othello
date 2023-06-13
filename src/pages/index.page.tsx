@@ -22,7 +22,7 @@ const Home = () => {
 
   const fetchLobby = async () => {
     // Fetch all lobby and find player in each lobby, then calculate current playerNum in each lobby
-    const lobbyResponse = await apiClient.lobby.$get().catch(returnNull);
+    const lobbyResponse = await apiClient.board.$get().catch(returnNull);
 
     if (lobbyResponse !== null) {
       // Use Promise.all to resolve when all promises in array have resolved

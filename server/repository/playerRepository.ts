@@ -1,155 +1,145 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
-import type { BoardModel, PlayerModel, UserModel } from '$/commonTypesWithClient/models';
+import type { PlayerModel } from '$/commonTypesWithClient/models';
+import { UserIdParser, lobbyIdParser } from '$/service/idParsers';
 import { prismaClient } from '$/service/prismaClient';
-import type { Board, Player } from '@prisma/client';
-import { getValidMoves } from './board/boardRepository';
+import { boardUseCase } from '$/usecase/board/boardUseCase';
+import type { Player } from '@prisma/client';
+import { boardRepository } from './board/boardRepository';
 
-export type UserColorDict = { black?: UserId; white?: UserId };
+export type UserColorDict = { black?: PlayerModel; white?: PlayerModel };
 export type PlayerTurn = UserId | undefined;
 
+export type Score = { blackScore: number; whiteScore: number };
+
 const toModel = (prismaPlayer: Player): PlayerModel => ({
-  id: prismaPlayer.id,
-  lobbyId: prismaPlayer.lobbyId,
-  boardId: prismaPlayer.boardId,
-  userId: prismaPlayer.userId as UserId,
-  displayName: prismaPlayer.displayName,
+  userId: UserIdParser.parse(prismaPlayer.userId),
+  lobbyId: lobbyIdParser.parse(prismaPlayer.lobbyId),
+  in: prismaPlayer.in.getTime(),
+  out: prismaPlayer.out?.getTime(),
   color: prismaPlayer.color,
   score: prismaPlayer.score,
-  created: prismaPlayer.createdAt.getTime(),
 });
 
-export const getCurrentPlayerInLobby = async (
-  lobbyId: PlayerModel['lobbyId']
-): Promise<PlayerModel[]> => {
-  // Get current player that in the lobby of lobbyId
-  const prismaPlayer = await prismaClient.player.findMany({
-    where: {
-      lobbyId,
-    },
-  });
-  return prismaPlayer.map(toModel);
-};
+export const playerRepository = {
+  save: async (player: PlayerModel) => {
+    await prismaClient.player.upsert({
+      where: { userId_lobbyId: { userId: player.userId, lobbyId: player.lobbyId } },
+      update: {
+        score: player.score,
+      },
+      create: {
+        userId: player.userId,
+        lobbyId: player.lobbyId,
+        in: new Date(player.in),
+        color: player.color,
+        score: player.score,
+      },
+    });
+  },
+  getAllInLobby: async (lobbyId: string): Promise<PlayerModel[]> => {
+    const player = await prismaClient.player.findMany({
+      where: { lobbyId },
+    });
+    return player.map(toModel);
+  },
+  getByUserId: async (lobbyId: string, userId: UserId): Promise<PlayerModel> => {
+    const player = await prismaClient.player.findFirst({
+      where: { userId, lobbyId },
+    });
+    if (!player) throw new Error("Player doesn't exist");
+    return toModel(player);
+  },
+  createPlayer: async (lobbyId: string, userId: UserId): Promise<PlayerModel> => {
+    // Set a color of player to 1 if no one in lobby, else 2
+    const playerList = await playerRepository.getAllInLobby(lobbyId);
+    const color = playerList.length === 0 ? 1 : 2;
 
-export const createPlayer = async (
-  lobbyId: PlayerModel['lobbyId'],
-  user: UserModel
-): Promise<PlayerModel> => {
-  const existingPlayer = await prismaClient.player.findUnique({
-    where: {
-      userId: user.id,
-    },
-  });
-  // userId already exists, return existed player
-  if (existingPlayer) return toModel(existingPlayer);
-
-  // Retrieve Player and Board from the lobby
-  const lobby = await prismaClient.lobby.findUnique({
-    where: {
-      id: lobbyId,
-    },
-    include: {
-      Board: true,
-      Player: true,
-    },
-  });
-  // Set a color of player to 1 if no one in lobby, else 2
-  const color = lobby && lobby.Player.length === 0 ? 1 : 2;
-
-  // Create a player linked to a lobby id
-  const prismaPlayer = await prismaClient.player.create({
-    data: {
-      userId: user.id,
-      displayName: user.displayName ?? user.id,
+    // Create a new player
+    const newPlayer = {
+      userId,
+      lobbyId: lobbyIdParser.parse(lobbyId),
+      in: Date.now(),
       color,
-      lobby: {
-        connect: {
-          id: lobbyId,
-        },
-      },
-      board: {
-        connect: {
-          id: lobby?.Board?.id,
-        },
-      },
-    },
-  });
-  return toModel(prismaPlayer);
+      score: 2,
+    };
+    await playerRepository.save(newPlayer);
+
+    return newPlayer;
+  },
+  getAllPlayerTurn: async (lobbyId: string): Promise<UserColorDict> => {
+    const playerList = await playerRepository.getAllInLobby(lobbyId);
+    const userColorDict: UserColorDict = {};
+
+    playerList.length === 2 &&
+      playerList.forEach((player) => {
+        if (player.color === 1) userColorDict.black = player;
+        else if (player.color === 2) userColorDict.white = player;
+      });
+    return userColorDict;
+  },
+  switchTurn: async (lobbyId: string, currentTurnUserId: UserId): Promise<UserId> => {
+    const userColorDict = await playerRepository.getAllPlayerTurn(lobbyId);
+    const blackPlayer = userColorDict.black;
+    const whitePlayer = userColorDict.white;
+
+    // Next turn is white turn if it the first turn (BUG) (HAVEN'T TEST if it fixed or not after refactor)
+    if (blackPlayer && whitePlayer) {
+      const opponentPlayerTurn: PlayerTurn =
+        currentTurnUserId === blackPlayer.userId ? whitePlayer.userId : blackPlayer.userId;
+
+      // If opponent can move, pass turn to opponent
+      // If opponent can't move, your turn
+      if ((await boardUseCase.getValidMoves(lobbyId, opponentPlayerTurn)).length)
+        currentTurnUserId = opponentPlayerTurn;
+    }
+
+    return currentTurnUserId;
+  },
+  setScore: async (lobbyId: string): Promise<void> => {
+    // Retrieve the user color dictionary for the given lobbyId
+    const userColorDict: UserColorDict = await playerRepository.getAllPlayerTurn(lobbyId);
+    const { blackScore, whiteScore } = await calculateScore(lobbyId);
+
+    if (userColorDict.black && userColorDict.white) {
+      // Update black and white player score
+      const blackPlayer: PlayerModel = {
+        userId: userColorDict.black.userId,
+        lobbyId: userColorDict.black.lobbyId,
+        in: userColorDict.black.in,
+        color: userColorDict.black.color,
+        score: blackScore,
+      };
+      const whitePlayer: PlayerModel = {
+        userId: userColorDict.white.userId,
+        lobbyId: userColorDict.white.lobbyId,
+        in: userColorDict.white.in,
+        color: userColorDict.white.color,
+        score: whiteScore,
+      };
+
+      await playerRepository.save(blackPlayer);
+      await playerRepository.save(whitePlayer);
+    }
+  },
 };
 
-export const switchTurn = async (lobbyId: PlayerModel['id']): Promise<PlayerTurn> => {
-  // Fetch player in this lobby with board info
-  const prismaPlayer = await prismaClient.player.findMany({
-    where: { lobbyId },
-    include: {
-      board: true,
-    },
-  });
-  if (!prismaPlayer) throw new Error("User doesn't exist");
+const calculateScore = async (lobbyId: string): Promise<Score> => {
+  // Retrieve the board data for the given lobbyId
+  const prismaBoard = await boardRepository.getCurrent(lobbyId);
+  const boardData = prismaBoard.boardData;
+  let blackScore = 0;
+  let whiteScore = 0;
 
-  // Switch to opponent turn if valid
-  const currentPlayerTurn: PlayerTurn = await switchTurnValidation(lobbyId, prismaPlayer);
-  await prismaClient.board.update({
-    where: { lobbyId },
-    data: { currentTurnUserId: currentPlayerTurn },
-  });
+  // Calculate the scores based on the values in the board data
+  boardData.forEach((row, y) =>
+    row.forEach((_, x) => {
+      if (boardData[y][x] === 1) {
+        blackScore += 1;
+      } else if (boardData[y][x] === 2) {
+        whiteScore += 1;
+      }
+    })
+  );
 
-  return currentPlayerTurn;
-};
-
-export const getCurrentTurn = async (lobbyId: BoardModel['id']): Promise<PlayerTurn> => {
-  // Get current turn of the boardId, if undefined, set it to the first player userId
-  const prismaPlayer = await prismaClient.player.findMany({
-    where: { lobbyId },
-    include: { board: true },
-  });
-  let currentTurnUserId = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
-  if (prismaPlayer && (!currentTurnUserId || currentTurnUserId === undefined)) {
-    currentTurnUserId = prismaPlayer[0].userId as PlayerTurn;
-  }
-  return currentTurnUserId;
-};
-
-export const getUserColorDict = async (lobbyId: PlayerModel['lobbyId']): Promise<UserColorDict> => {
-  // Assign each userId to the color
-  const prismaPlayer = await prismaClient.player.findMany({
-    where: { lobbyId },
-    include: {
-      board: true,
-    },
-  });
-  if (!prismaPlayer) throw new Error("User doesn't exist");
-
-  const userColorDict: UserColorDict = {};
-  prismaPlayer.forEach((player) => {
-    if (player.color === 1) userColorDict.black = player.userId as UserId;
-    else if (player.color === 2) userColorDict.white = player.userId as UserId;
-  });
-  return userColorDict;
-};
-
-const switchTurnValidation = async (
-  lobbyId: PlayerModel['lobbyId'],
-  prismaPlayer: (Player & {
-    board: Board;
-  })[]
-): Promise<PlayerTurn> => {
-  const userColorDict = await getUserColorDict(lobbyId);
-  const blackUserId = userColorDict.black;
-  const whiteUserId = userColorDict.white;
-  // If current player can move and opponent can move too, switch to opponent turn and set to opponent turn
-  let currentPlayerTurn: PlayerTurn = prismaPlayer[0].board.currentTurnUserId as PlayerTurn;
-
-  // Next turn is white turn if it the first turn (BUG)
-  if (currentPlayerTurn === null) return blackUserId;
-
-  const opponentPlayerTurn: PlayerTurn =
-    currentPlayerTurn === blackUserId ? whiteUserId : blackUserId;
-
-  // If opponent can move, pass turn to opponent
-  // If opponent can't move, your turn
-  if (opponentPlayerTurn && (await getValidMoves(lobbyId, opponentPlayerTurn)).length) {
-    currentPlayerTurn = opponentPlayerTurn;
-  }
-
-  return currentPlayerTurn;
+  return { blackScore, whiteScore };
 };

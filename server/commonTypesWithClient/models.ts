@@ -1,5 +1,5 @@
 import type { BoardArray, Pos } from '$/repository/board/boardRepository';
-import type { TaskId, UserId } from './branded';
+import type { LobbyId, TaskId, UserId } from './branded';
 
 export type UserModel = {
   id: UserId;
@@ -15,33 +15,21 @@ export type TaskModel = {
   created: number;
 };
 
-export type LobbyModel = {
-  id: number;
-  title: string;
-  created: number;
-  updated: number;
-  playerNum?: number;
-  Player?: PlayerModel;
-};
-
-export type PlayerModel = {
-  id: number;
-  lobbyId: number;
-  boardId: number;
-  userId: UserId;
-  displayName: string;
-  color: number;
-  score: number;
-  created: number;
-};
-
 export type BoardModel = {
-  id: number;
-  lobbyId: number;
+  id: string;
+  lobbyName: string;
   boardData: BoardArray;
   latestMove?: Pos;
   isGameEnd: boolean;
-  currentTurnUserId?: UserId;
+  currentTurnUserId: UserId;
   created: number;
-  updated: number;
+};
+
+export type PlayerModel = {
+  userId: UserId;
+  lobbyId: LobbyId;
+  in: number;
+  out?: number;
+  color: number;
+  score: number;
 };

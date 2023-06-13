@@ -3,12 +3,12 @@ import { boardUseCase } from '$/usecase/board/boardUseCase';
 import { defineController } from './$relay';
 
 export default defineController(() => ({
-  get: async () => ({
+  get: async ({ params: { lobbyId } }) => ({
     status: 200,
-    body: await boardRepository.getAll(),
+    body: await boardRepository.getCurrent(lobbyId),
   }),
-  post: async ({ body }) => ({
-    status: 201,
-    body: await boardUseCase.create(body.lobbyName, body.userId),
+  put: async ({ body, params: { lobbyId }, user }) => ({
+    status: 200,
+    body: { board: await boardUseCase.clickBoard(lobbyId, body, user.id) },
   }),
 }));

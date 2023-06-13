@@ -1,5 +1,5 @@
 export type Methods = {
   put: {
-    resBody: void;
+    status: 204;
   };
 };

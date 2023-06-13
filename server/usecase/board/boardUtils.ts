@@ -1,24 +1,5 @@
-import type { UserId } from '$/commonTypesWithClient/branded';
-import type { BoardModel } from '$/commonTypesWithClient/models';
-import { prismaClient } from '$/service/prismaClient';
-import type { Board, Player } from '@prisma/client';
-import type { BoardArray } from './boardRepository';
+import type { BoardArray } from '$/repository/board/boardRepository';
 
-export const getBoardByLobbyId = async (lobbyId: BoardModel['id']): Promise<Board> => {
-  // Get current board
-  const prismaBoard = await prismaClient.board.findFirst({ where: { lobbyId } });
-  if (!prismaBoard) throw new Error("Board doesn't exist");
-  return prismaBoard;
-};
-
-export const getPlayerByUserId = async (userId: UserId): Promise<Player> => {
-  // Get current player
-  const prismaPlayer = await prismaClient.player.findFirst({ where: { userId } });
-  if (!prismaPlayer) throw new Error("Player doesn't exist");
-  return prismaPlayer;
-};
-
-// Check if the move is valid or not
 export const isValidMove = (
   x: number,
   y: number,
@@ -28,7 +9,6 @@ export const isValidMove = (
   board: BoardArray
 ): boolean => {
   if (isInsideBoard(x, y, board) && board[y][x] !== 0 && board[y][x] !== userColor) {
-    // console.log('color', userColor, 'x', x, 'y', y);
     const currX = x + dx;
     const currY = y + dy;
 
@@ -38,7 +18,6 @@ export const isValidMove = (
   return false;
 };
 
-// function to flip disc after place a new one
 export const flipDisc = (
   x: number,
   y: number,
@@ -47,6 +26,7 @@ export const flipDisc = (
   userColor: number,
   board: BoardArray
 ): void => {
+  // function to flip disc after place a new one
   let currX = x;
   let currY = y;
 
@@ -77,7 +57,6 @@ const isSameColorInLine = (
     if (currDisc === 0) {
       return false;
     } else if (currDisc === userColor) {
-      // console.log('color', userColor, 'true', 'x', x, 'y', y);
       return true;
     }
 
