@@ -38,12 +38,11 @@ const Home = () => {
   // Route handler data
   const router = useRouter();
   const { lobbyId } = router.query;
-  console.log(router.query);
-  const lobbyIdRef = useRef<LobbyId>(lobbyIdParser.parse(lobbyId));
 
   // Update lobbyIdRef whenever lobbyId change
+  const lobbyIdRef = useRef<LobbyId>(lobbyIdParser.parse(lobbyId ?? ''));
   useEffect(() => {
-    lobbyIdRef.current = lobbyIdParser.parse(lobbyId);
+    lobbyIdRef.current = lobbyIdParser.parse(lobbyId ?? '');
   }, [lobbyId]);
 
   // GET board
@@ -87,7 +86,7 @@ const Home = () => {
     return () => clearInterval(cancelId);
   }, []);
 
-  if (!board || !user) return <Loading visible />;
+  if (!lobbyId || !board || !user) return <Loading visible />;
 
   return (
     <>
