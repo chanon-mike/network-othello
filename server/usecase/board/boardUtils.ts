@@ -1,4 +1,4 @@
-import type { BoardArray } from '$/repository/board/boardRepository';
+import type { BoardArray } from '$/repository/boardRepository';
 
 export const isValidMove = (
   x: number,

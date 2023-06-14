@@ -1,10 +1,11 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
 import type { BoardModel } from '$/commonTypesWithClient/models';
-import type { Pos } from '$/repository/board/boardRepository';
-import { boardRepository } from '$/repository/board/boardRepository';
+import type { Pos } from '$/repository/boardRepository';
+import { boardRepository } from '$/repository/boardRepository';
 import { playerRepository } from '$/repository/playerRepository';
 import { lobbyIdParser } from '$/service/idParsers';
 import { randomUUID } from 'crypto';
+import { playerUseCase } from '../playerUseCase';
 import { flipDisc, isValidMove } from './boardUtils';
 
 const initBoard = () => [
@@ -80,9 +81,9 @@ export const boardUseCase = {
       await boardRepository.save(newBoard);
 
       // Set score, game end, turn
-      await playerRepository.setScore(lobbyId);
+      await playerUseCase.setScore(lobbyId);
       const isGameEnd = await boardUseCase.isGameFinish(lobbyId);
-      currentTurnUserId = await playerRepository.switchTurn(lobbyId, currentTurnUserId);
+      currentTurnUserId = await playerUseCase.switchTurn(lobbyId, currentTurnUserId);
 
       // Save a final result
       newBoard.isGameEnd = isGameEnd;
@@ -118,7 +119,7 @@ export const boardUseCase = {
     return validMoves;
   },
   isGameFinish: async (lobbyId: string): Promise<boolean> => {
-    const userColorDict = await playerRepository.getAllPlayerTurn(lobbyId);
+    const userColorDict = await playerUseCase.getAllPlayerTurn(lobbyId);
     const blackPlayer = userColorDict.black;
     const whitePlayer = userColorDict.white;
 
@@ -151,7 +152,7 @@ export const boardUseCase = {
         created: Date.now(),
       };
       await boardRepository.save(newBoard);
-      playerRepository.setScore(lobbyId);
+      playerUseCase.setScore(lobbyId);
     }
   },
 };

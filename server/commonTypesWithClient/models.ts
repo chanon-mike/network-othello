@@ -1,4 +1,4 @@
-import type { BoardArray, Pos } from '$/repository/board/boardRepository';
+import type { BoardArray, Pos } from '$/repository/boardRepository';
 import type { LobbyId, TaskId, UserId } from './branded';
 
 export type UserModel = {

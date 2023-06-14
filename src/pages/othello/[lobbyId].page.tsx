@@ -1,5 +1,5 @@
 import type { LobbyId } from '$/commonTypesWithClient/branded';
-import type { BoardArray, Pos } from '$/repository/board/boardRepository';
+import type { BoardArray, Pos } from '$/repository/boardRepository';
 import type { PlayerTurn, Score } from '$/repository/playerRepository';
 import { lobbyIdParser } from '$/service/idParsers';
 import { useAtom } from 'jotai';
@@ -26,6 +26,7 @@ const Home = () => {
     }
   };
 
+  // State initialization
   const [user] = useAtom(userAtom);
   const [board, setBoard] = useState<BoardArray>();
   const [score, setScore] = useState<Score>({ blackScore: 0, whiteScore: 0 });
@@ -37,6 +38,7 @@ const Home = () => {
   // Route handler data
   const router = useRouter();
   const { lobbyId } = router.query;
+  console.log(router.query);
   const lobbyIdRef = useRef<LobbyId>(lobbyIdParser.parse(lobbyId));
 
   // Update lobbyIdRef whenever lobbyId change
@@ -44,7 +46,7 @@ const Home = () => {
     lobbyIdRef.current = lobbyIdParser.parse(lobbyId);
   }, [lobbyId]);
 
-  // GET board and GET list of valid move
+  // GET board
   const fetchBoard = async () => {
     const board = await apiClient.board._lobbyId(lobbyIdRef.current).$get().catch(returnNull);
 
@@ -76,7 +78,7 @@ const Home = () => {
     }
   };
 
-  // Fetch board every 0.5s to make it look real-time
+  // Fetch board every 0.5s
   useEffect(() => {
     const cancelId = setInterval(() => {
       fetchBoard();

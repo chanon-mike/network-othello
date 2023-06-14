@@ -1,4 +1,4 @@
-import { boardRepository } from '$/repository/board/boardRepository';
+import { boardRepository } from '$/repository/boardRepository';
 import { boardUseCase } from '$/usecase/board/boardUseCase';
 import { defineController } from './$relay';
 
