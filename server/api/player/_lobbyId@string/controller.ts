@@ -12,4 +12,8 @@ export default defineController(() => ({
     status: 201,
     body: { player: await playerUseCase.createPlayer(lobbyId, user.id) },
   }),
+  delete: async ({ params: { lobbyId }, user }) => ({
+    status: 200,
+    body: { player: await playerRepository.delete(lobbyId, user.id) },
+  }),
 }));

@@ -13,6 +13,7 @@ import { returnNull } from 'src/utils/returnNull';
 import Board from '../@components/Othello/Board/Board';
 import Modal from '../@components/Othello/Modal/Modal';
 import ScoreBorder from '../@components/Othello/ScoreBorder/ScoreBorder';
+import { useWarnIfDisconnect } from '../@hooks/useWarnIfDisconnect';
 import styles from './index.module.css';
 
 const Home = () => {
@@ -87,6 +88,20 @@ const Home = () => {
     }, 500);
     return () => clearInterval(cancelId);
   }, []);
+
+  // Warn user if going to disconnect
+  useWarnIfDisconnect();
+  // Delete current player from board if disconnected, set game to end and reset a game
+  useEffect(() => {
+    const handleRouteChange = async () =>
+      await apiClient.player._lobbyId(lobbyIdRef.current).$delete();
+
+    router.events.on('routeChangeStart', handleRouteChange);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, [router.events]);
 
   if (!board || !user) return <Loading visible />;
 

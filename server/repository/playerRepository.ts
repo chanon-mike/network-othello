@@ -46,4 +46,16 @@ export const playerRepository = {
     if (!player) throw new Error("Player doesn't exist");
     return toModel(player);
   },
+  delete: async (lobbyId: string, userId: UserId): Promise<PlayerModel> => {
+    const deletePlayer = await prismaClient.player.delete({
+      where: {
+        userId_lobbyId: {
+          userId,
+          lobbyId,
+        },
+      },
+    });
+    if (!deletePlayer) throw new Error("Player doesn't exist");
+    return toModel(deletePlayer);
+  },
 };

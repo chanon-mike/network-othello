@@ -12,4 +12,10 @@ export type Methods = {
       player: PlayerModel;
     };
   };
+
+  delete: {
+    resBody: {
+      player: PlayerModel;
+    };
+  };
 };
