@@ -1,4 +1,5 @@
 import { playerRepository } from '$/repository/playerRepository';
+import { playerUseCase } from '$/usecase/playerUseCase';
 
 import { defineController } from './$relay';
 
@@ -9,6 +10,6 @@ export default defineController(() => ({
   }),
   post: async ({ params: { lobbyId }, user }) => ({
     status: 201,
-    body: { player: await playerRepository.createPlayer(lobbyId, user.id) },
+    body: { player: await playerUseCase.createPlayer(lobbyId, user.id) },
   }),
 }));

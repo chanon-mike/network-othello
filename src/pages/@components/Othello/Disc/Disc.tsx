@@ -1,4 +1,4 @@
-import type { Pos } from '$/repository/board/boardRepository';
+import type { Pos } from '$/repository/boardRepository';
 import React from 'react';
 import { LatestMove } from '../LatestMove/LatestMove';
 import styles from './Disc.module.css';
