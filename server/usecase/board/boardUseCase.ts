@@ -49,14 +49,14 @@ export const boardUseCase = {
   },
   clickBoard: async (lobbyId: string, params: Pos, userId: UserId): Promise<BoardModel> => {
     const prismaBoard = await boardRepository.getCurrent(lobbyId);
-    const prismaPlayer = await playerRepository.getByUserId(lobbyId, userId);
+    const prismaPlayer = await playerRepository.getAllInLobby(lobbyId);
     let newBoard: BoardModel = prismaBoard;
     let currentTurnUserId = prismaBoard.currentTurnUserId;
 
     // Clickable if this player turn
-    if (currentTurnUserId === userId) {
+    if (prismaPlayer.length === 2 && currentTurnUserId === userId) {
       const boardData = prismaBoard.boardData;
-      const userColor = prismaPlayer.color;
+      const userColor = prismaPlayer.filter((player) => player.userId === userId)[0].color;
       const latestMove = { x: params.x, y: params.y };
 
       boardData[params.y][params.x] = userColor;

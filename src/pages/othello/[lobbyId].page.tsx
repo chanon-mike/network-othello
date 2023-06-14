@@ -34,6 +34,7 @@ const Home = () => {
   const [validMoveList, setValidMoveList] = useState<Pos[]>([]);
   const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<PlayerTurn>();
   const [isGameEnd, setIsGameEnd] = useState<boolean>(false);
+  const [playerNum, setPlayerNum] = useState<number>(0);
 
   // Route handler data
   const router = useRouter();
@@ -68,7 +69,8 @@ const Home = () => {
   // GET score
   const fetchScore = async () => {
     const response = await apiClient.player._lobbyId(lobbyIdRef.current).$get();
-    if (response !== null && response.player.length === 2) {
+    setPlayerNum(response.player.length);
+    if (response.player.length === 2) {
       const blackScore =
         response.player[0].color === 1 ? response.player[0].score : response.player[1].score;
       const whiteScore =
@@ -86,7 +88,7 @@ const Home = () => {
     return () => clearInterval(cancelId);
   }, []);
 
-  if (!lobbyId || !board || !user) return <Loading visible />;
+  if (!board || !user) return <Loading visible />;
 
   return (
     <>
@@ -108,6 +110,7 @@ const Home = () => {
             isGameEnd={isGameEnd}
             score={score}
             lobbyId={lobbyIdRef.current}
+            playerNum={playerNum}
           />
 
           <ScoreBorder score={score} color={2} backgroundColor={'#fff'} />
