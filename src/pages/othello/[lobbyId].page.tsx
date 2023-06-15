@@ -1,5 +1,5 @@
 import type { LobbyId } from '$/commonTypesWithClient/branded';
-import type { BoardArray, Pos } from '$/repository/boardRepository';
+import type { BoardArray, GameStatus, Pos } from '$/repository/boardRepository';
 import type { PlayerTurn, Score } from '$/repository/playerRepository';
 import { lobbyIdParser } from '$/service/idParsers';
 import { useAtom } from 'jotai';
@@ -34,8 +34,7 @@ const Home = () => {
   const [latestMove, setLatestMove] = useState<Pos>();
   const [validMoveList, setValidMoveList] = useState<Pos[]>([]);
   const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<PlayerTurn>();
-  const [isGameEnd, setIsGameEnd] = useState<boolean>(false);
-  const [playerNum, setPlayerNum] = useState<number>(0);
+  const [gameStatus, setGameStatus] = useState<GameStatus>('waiting');
 
   // Route handler data
   const router = useRouter();
@@ -61,7 +60,7 @@ const Home = () => {
       // Set latest move
       setLatestMove(board.latestMove);
       // Set game status
-      setIsGameEnd(board.isGameEnd);
+      setGameStatus(board.status);
       // Get current turn user id
       setCurrentTurnPlayerId(board.currentTurnUserId);
     }
@@ -70,7 +69,6 @@ const Home = () => {
   // GET score
   const fetchScore = async () => {
     const response = await apiClient.player._lobbyId(lobbyIdRef.current).$get();
-    setPlayerNum(response.player.length);
     if (response.player.length === 2) {
       const blackScore =
         response.player[0].color === 1 ? response.player[0].score : response.player[1].score;
@@ -93,8 +91,11 @@ const Home = () => {
   useWarnIfDisconnect();
   // Delete current player from board if disconnected, set game to end and reset a game
   useEffect(() => {
-    const handleRouteChange = async () =>
+    const handleRouteChange = async () => {
+      // Delete player and reset board
       await apiClient.player._lobbyId(lobbyIdRef.current).$delete();
+      await apiClient.board._lobbyId(lobbyIdRef.current).restart.$put();
+    };
 
     router.events.on('routeChangeStart', handleRouteChange);
 
@@ -122,10 +123,9 @@ const Home = () => {
           />
           <Modal
             // validMoveList={validMoveList}
-            isGameEnd={isGameEnd}
+            gameStatus={gameStatus}
             score={score}
             lobbyId={lobbyIdRef.current}
-            playerNum={playerNum}
           />
 
           <ScoreBorder score={score} color={2} backgroundColor={'#fff'} />

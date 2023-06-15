@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 export type BoardArray = number[][];
 export type Pos = { x: number; y: number };
+export type GameStatus = 'waiting' | 'playing' | 'ended';
 
 const toModel = (prismaBoard: Board): BoardModel => ({
   id: lobbyIdParser.parse(prismaBoard.id),
@@ -20,7 +21,7 @@ const toModel = (prismaBoard: Board): BoardModel => ({
           })
           .parse(prismaBoard.latestMove)
       : undefined,
-  isGameEnd: prismaBoard.isGameEnd,
+  status: z.enum(['waiting', 'playing', 'ended']).parse(prismaBoard.status),
   currentTurnUserId: UserIdParser.parse(prismaBoard.currentTurnUserId),
   created: prismaBoard.createdAt.getTime(),
 });
@@ -32,7 +33,7 @@ export const boardRepository = {
       update: {
         boardData: board.boardData,
         latestMove: board.latestMove,
-        isGameEnd: board.isGameEnd,
+        status: board.status,
         currentTurnUserId: board.currentTurnUserId,
       },
       create: {
@@ -40,25 +41,20 @@ export const boardRepository = {
         lobbyName: board.lobbyName,
         boardData: board.boardData,
         latestMove: board.latestMove,
-        isGameEnd: board.isGameEnd,
+        status: board.status,
         currentTurnUserId: board.currentTurnUserId,
         createdAt: new Date(board.created),
       },
     });
   },
   getAll: async (): Promise<BoardModel[]> => {
-    try {
-      // Get all lobby data
-      const board = await prismaClient.board.findMany({
-        orderBy: { createdAt: 'desc' },
-      });
-      if (!board) return [];
+    // Get all lobby data
+    const board = await prismaClient.board.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!board) return [];
 
-      return board.map(toModel);
-    } catch (error) {
-      console.error('An error occurred while creating the board:', error);
-      throw error;
-    }
+    return board.map(toModel);
   },
   getCurrent: async (lobbyId: string): Promise<BoardModel> => {
     const board = await prismaClient.board.findFirst({

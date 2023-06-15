@@ -1,6 +1,6 @@
 import type { UserId } from '$/commonTypesWithClient/branded';
 import type { BoardModel } from '$/commonTypesWithClient/models';
-import type { Pos } from '$/repository/boardRepository';
+import type { GameStatus, Pos } from '$/repository/boardRepository';
 import { boardRepository } from '$/repository/boardRepository';
 import { playerRepository } from '$/repository/playerRepository';
 import { lobbyIdParser } from '$/service/idParsers';
@@ -37,11 +37,10 @@ export const boardUseCase = {
       lobbyName,
       boardData: initBoard(),
       latestMove: { x: 0, y: 0 },
-      isGameEnd: false,
+      status: 'waiting',
       currentTurnUserId: userId,
       created: Date.now(),
     };
-    console.log(newBoard);
     // Right now when create board, current user need to be pass, so maybe create board before player
     await boardRepository.save(newBoard);
 
@@ -74,25 +73,25 @@ export const boardUseCase = {
         lobbyName: prismaBoard.lobbyName,
         boardData,
         latestMove,
-        isGameEnd: false,
+        status: 'playing',
         currentTurnUserId,
         created: prismaBoard.created,
       };
       await boardRepository.save(newBoard);
 
-      // Set score, game end, turn
+      // Set score, turn
       await playerUseCase.setScore(lobbyId);
-      const isGameEnd = await boardUseCase.isGameFinish(lobbyId);
       currentTurnUserId = await playerUseCase.switchTurn(lobbyId, currentTurnUserId);
 
-      // Save a final result
-      newBoard.isGameEnd = isGameEnd;
+      // Save a final result and set game status
       newBoard.currentTurnUserId = currentTurnUserId;
       await boardRepository.save(newBoard);
+      await boardUseCase.changeStatus(lobbyId);
     }
     return newBoard;
   },
   getValidMoves: async (lobbyId: string, userId: UserId): Promise<Pos[]> => {
+    // Bug when second player join, error 500
     const prismaBoard = await boardRepository.getCurrent(lobbyId);
     const prismaPlayer = await playerRepository.getByUserId(lobbyId, userId);
 
@@ -118,21 +117,33 @@ export const boardUseCase = {
 
     return validMoves;
   },
-  isGameFinish: async (lobbyId: string): Promise<boolean> => {
+  changeStatus: async (lobbyId: string): Promise<void> => {
     const userColorDict = await playerUseCase.getAllPlayerTurn(lobbyId);
     const blackPlayer = userColorDict.black;
     const whitePlayer = userColorDict.white;
 
+    let gameStatus: GameStatus = 'waiting';
+
     // Check if black and whtie have any valid move left
     if (blackPlayer && whitePlayer) {
-      const blackMoveable =
+      const blackNotMove =
         (await boardUseCase.getValidMoves(lobbyId, blackPlayer.userId)).length === 0;
-      const whiteMoveable =
+      const whiteNotMove =
         (await boardUseCase.getValidMoves(lobbyId, whitePlayer.userId)).length === 0;
-      return blackMoveable && whiteMoveable;
+      gameStatus = blackNotMove && whiteNotMove ? 'ended' : 'playing';
     }
 
-    return false;
+    const prismaBoard = await boardRepository.getCurrent(lobbyId);
+    const newBoard: BoardModel = {
+      id: prismaBoard.id,
+      lobbyName: prismaBoard.lobbyName,
+      boardData: prismaBoard.boardData,
+      latestMove: prismaBoard.latestMove,
+      status: gameStatus,
+      currentTurnUserId: prismaBoard.currentTurnUserId,
+      created: prismaBoard.created,
+    };
+    await boardRepository.save(newBoard);
   },
   resetBoard: async (lobbyId: string): Promise<void> => {
     const thisBoard = await boardRepository.getCurrent(lobbyId);
@@ -140,14 +151,21 @@ export const boardUseCase = {
 
     // Reset board, latest move and current player turn
     if (playerList) {
-      const startTurnUserId =
-        playerList[0].color === 1 ? playerList[0].userId : playerList[1].userId;
+      // Get userId of black in the last game, if not exist, get player who was white and set color to black
+      let startTurnUserId: UserId = playerList[0].userId;
+
+      if (playerList[0].color === 1) {
+        startTurnUserId = playerList[0].userId;
+      } else if (playerList[1]) {
+        startTurnUserId = playerList[1].userId;
+      }
+
       const newBoard: BoardModel = {
         id: thisBoard.id,
         lobbyName: thisBoard.lobbyName,
         boardData: initBoard(),
         latestMove: undefined,
-        isGameEnd: false,
+        status: 'waiting',
         currentTurnUserId: startTurnUserId,
         created: Date.now(),
       };

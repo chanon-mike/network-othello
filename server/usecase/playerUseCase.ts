@@ -10,7 +10,7 @@ export const playerUseCase = {
   createPlayer: async (lobbyId: string, userId: UserId): Promise<PlayerModel> => {
     // Set a color of player to 1 if no one in lobby, else 2
     const playerList = await playerRepository.getAllInLobby(lobbyId);
-    const color = playerList.length === 0 ? 1 : 2;
+    const color = playerList.length === 0 ? 1 : playerList[0].color === 1 ? 2 : 1;
 
     // Create a new player
     const newPlayer = {
@@ -21,6 +21,12 @@ export const playerUseCase = {
       score: 2,
     };
     await playerRepository.save(newPlayer);
+
+    // Change game status to playing after 2 player joined
+    const updatedPlayerList = await playerRepository.getAllInLobby(lobbyId);
+    if (updatedPlayerList.length === 2) {
+      await boardUseCase.changeStatus(lobbyId);
+    }
 
     return newPlayer;
   },
@@ -39,8 +45,8 @@ export const playerUseCase = {
     const userColorDict = await playerUseCase.getAllPlayerTurn(lobbyId);
     const blackPlayer = userColorDict.black;
     const whitePlayer = userColorDict.white;
+    console.log(userColorDict);
 
-    // Next turn is white turn if it the first turn (BUG) (HAVEN'T TEST if it fixed or not after refactor)
     if (blackPlayer && whitePlayer) {
       const opponentPlayerTurn: UserId =
         currentTurnUserId === blackPlayer.userId ? whitePlayer.userId : blackPlayer.userId;

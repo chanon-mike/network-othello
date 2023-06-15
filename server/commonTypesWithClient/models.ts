@@ -20,7 +20,7 @@ export type BoardModel = {
   lobbyName: string;
   boardData: BoardArray;
   latestMove?: Pos;
-  isGameEnd: boolean;
+  status: 'waiting' | 'playing' | 'ended';
   currentTurnUserId: UserId;
   created: number;
 };

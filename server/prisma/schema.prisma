@@ -19,7 +19,7 @@ model Board {
   lobbyName         String?
   boardData         Json
   latestMove        Json?
-  isGameEnd         Boolean  @default(false)
+  status            String
   currentTurnUserId String
   playerList        Player[]
   createdAt         DateTime @default(now())
