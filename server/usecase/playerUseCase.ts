@@ -12,6 +12,10 @@ export const playerUseCase = {
     const playerList = await playerRepository.getAllInLobby(lobbyId);
     const color = playerList.length === 0 ? 1 : playerList[0].color === 1 ? 2 : 1;
 
+    if (playerList.length === 2) {
+      throw new Error('There are already two player in the lobby');
+    }
+
     // Create a new player
     const newPlayer = {
       userId,

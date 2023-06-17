@@ -91,31 +91,34 @@ export const boardUseCase = {
     return newBoard;
   },
   getValidMoves: async (lobbyId: string, userId: UserId): Promise<Pos[]> => {
-    // Bug when second player join, error 500
-    const prismaBoard = await boardRepository.getCurrent(lobbyId);
-    const prismaPlayer = await playerRepository.getByUserId(lobbyId, userId);
+    try {
+      const prismaBoard = await boardRepository.getCurrent(lobbyId);
+      const prismaPlayer = await playerRepository.getByUserId(lobbyId, userId);
+      // Get a list of valid moves, board, and color
+      const validMoves: Pos[] = [];
+      const boardData = prismaBoard.boardData;
+      const userColor = prismaPlayer.color;
 
-    // Get a list of valid moves, board, and color
-    const validMoves: Pos[] = [];
-    const boardData = prismaBoard.boardData;
-    const userColor = prismaPlayer.color;
+      // Loop through each cell in the board and find valid moves
+      boardData.forEach((row, y) =>
+        row.forEach((_, x) => {
+          boardData[y][x] === 0 &&
+            directions.forEach((direction) => {
+              const [dx, dy] = direction;
+              const newX = x + dx;
+              const newY = y + dy;
+              if (isValidMove(newX, newY, dx, dy, userColor, boardData)) {
+                validMoves.push({ x, y });
+              }
+            });
+        })
+      );
 
-    // Loop through each cell in the board and find valid moves
-    boardData.forEach((row, y) =>
-      row.forEach((_, x) => {
-        boardData[y][x] === 0 &&
-          directions.forEach((direction) => {
-            const [dx, dy] = direction;
-            const newX = x + dx;
-            const newY = y + dy;
-            if (isValidMove(newX, newY, dx, dy, userColor, boardData)) {
-              validMoves.push({ x, y });
-            }
-          });
-      })
-    );
-
-    return validMoves;
+      return validMoves;
+    } catch (error) {
+      // When player other than 2 first player join, catch and error and return empty list
+      return [];
+    }
   },
   changeStatus: async (lobbyId: string): Promise<void> => {
     const userColorDict = await playerUseCase.getAllPlayerTurn(lobbyId);
@@ -170,7 +173,7 @@ export const boardUseCase = {
       lobbyName: thisBoard.lobbyName,
       boardData: initBoard(),
       latestMove: undefined,
-      status: 'waiting',
+      status: playerList.length === 2 ? 'playing' : 'waiting',
       currentTurnUserId: startTurnUserId,
       created: Date.now(),
     };
