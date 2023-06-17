@@ -22,6 +22,7 @@ export const playerRepository = {
     await prismaClient.player.upsert({
       where: { userId_lobbyId: { userId: player.userId, lobbyId: player.lobbyId } },
       update: {
+        color: player.color,
         score: player.score,
       },
       create: {

@@ -149,30 +149,32 @@ export const boardUseCase = {
     const thisBoard = await boardRepository.getCurrent(lobbyId);
     const playerList = await playerRepository.getAllInLobby(lobbyId);
 
-    // Reset board, latest move and current player turn
-    if (playerList.length > 0) {
-      // Get userId of black in the last game, if not exist, get player who was white and set color to black
-      let startTurnUserId: UserId = playerList[0].userId;
-
-      if (playerList[0].color === 1) {
-        startTurnUserId = playerList[0].userId;
-      } else if (playerList[1]) {
-        startTurnUserId = playerList[1].userId;
-      }
-      const newBoard: BoardModel = {
-        id: thisBoard.id,
-        lobbyName: thisBoard.lobbyName,
-        boardData: initBoard(),
-        latestMove: undefined,
-        status: 'waiting',
-        currentTurnUserId: startTurnUserId,
-        created: Date.now(),
-      };
-      await boardRepository.save(newBoard);
-      playerUseCase.setScore(lobbyId);
-    } else {
-      // If no player left, remove board
+    if (playerList.length === 0) {
       await boardRepository.delete(lobbyId);
+      return;
     }
+
+    // Get userId of black in the last game, if not exist, get player who was white and set color to black
+    let startTurnUserId: UserId = playerList[0].userId;
+
+    if (playerList[0].color === 1) {
+      startTurnUserId = playerList[0].userId;
+    } else if (playerList[0].color === 2) {
+      playerList[0].color = 1;
+      playerRepository.save(playerList[0]);
+    }
+
+    // Reset board, latest move and current player turn
+    const newBoard: BoardModel = {
+      id: thisBoard.id,
+      lobbyName: thisBoard.lobbyName,
+      boardData: initBoard(),
+      latestMove: undefined,
+      status: 'waiting',
+      currentTurnUserId: startTurnUserId,
+      created: Date.now(),
+    };
+    await boardRepository.save(newBoard);
+    playerUseCase.setScore(lobbyId);
   },
 };
