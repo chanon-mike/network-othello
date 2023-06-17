@@ -1,19 +1,18 @@
 .disc {
-  width: 4rem;
+  width: 3.5rem;
   aspect-ratio: 1;
-  border: 1px solid #303030;
   border-radius: 100%;
   margin: auto;
   display: flex;
 }
 
-@media all and (width < 700px), (height < 700px) {
+@media all and (width < 700px) {
   .disc {
     width: 3rem;
   }
 }
 
-@media all and (width < 500px), (height < 500px) {
+@media all and (width < 500px) {
   .disc {
     width: 2rem;
   }

@@ -1,12 +1,13 @@
 .board {
-  background-color: #078846;
-  width: 640px;
+  background-color: #1d756a;
+  width: 560px;
   aspect-ratio: 1;
+  overflow: hidden;
 }
 
 .cell {
-  border: 1px solid #000;
-  width: 80px;
+  border: 1px solid #314a52;
+  width: 70px;
   aspect-ratio: 1;
   display: inline-flex;
   vertical-align: top;
@@ -16,16 +17,16 @@
   width: 4rem;
   aspect-ratio: 1;
   opacity: 0.5;
-  border: 1px solid #303030;
+  border: 1px solid #8ea9b7;
   border-radius: 100%;
-  outline: 1px solid #303030;
+  outline: 1px solid #8ea9b7;
   outline-offset: -0.3rem;
   background-color: transparent;
   margin: auto;
   display: flex;
 }
 
-@media all and (width < 700px), (height < 700px) {
+@media all and (width < 700px) {
   .board {
     width: 480px;
   }
@@ -39,7 +40,7 @@
   }
 }
 
-@media all and (width < 500px), (height < 500px) {
+@media all and (width < 500px) {
   .board {
     width: 320px;
     height: 320px;

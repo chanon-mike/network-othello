@@ -112,7 +112,7 @@ const Home = () => {
       <BasicHeader user={user} />
       <div className={styles.container}>
         <div className={styles.row}>
-          <ScoreBorder score={score} color={1} backgroundColor={'#000'} />
+          <ScoreBorder score={score} currentTurnPlayerId={currentTurnPlayerId} user={user} />
 
           <Board
             user={user}
@@ -128,8 +128,6 @@ const Home = () => {
             score={score}
             lobbyId={lobbyIdRef.current}
           />
-
-          <ScoreBorder score={score} color={2} backgroundColor={'#fff'} />
         </div>
       </div>
     </>

@@ -1,4 +1,3 @@
-import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { staticPath } from 'src/utils/$path';
 import { loginWithGitHub } from 'src/utils/login';
 import { useLoading } from '../@hooks/useLoading';
@@ -15,14 +14,14 @@ const Login = () => {
   return (
     <div
       className={styles.container}
-      style={{ background: `center/cover url('${staticPath.images.odaiba_jpg}')` }}
+      style={{ background: `center/cover url('${staticPath.images.othello_images_jpg}')` }}
     >
       <div className={styles.main}>
-        <div className={styles.title}>next-frourio-starter</div>
+        <div className={styles.title}>Online Othello</div>
         <div style={{ marginTop: '16px' }} onClick={login}>
           <div className={styles.btn}>
-            <GithubIcon size={18} fill="#fff" />
-            <span>Login with GitHub</span>
+            {/* <GithubIcon size={18} fill="#fff" /> */}
+            <span>Login</span>
           </div>
         </div>
       </div>

@@ -1,4 +1,6 @@
 import type { UserModel } from '$/commonTypesWithClient/models';
+import Image from 'next/image';
+import Link from 'next/link';
 import { HumanIcon } from 'src/components/icons/HumanIcon';
 import { staticPath } from 'src/utils/$path';
 import { logout } from 'src/utils/login';
@@ -12,7 +14,9 @@ export const BasicHeader = ({ user }: { user: UserModel }) => {
   return (
     <div className={styles.container}>
       <div className={styles.main}>
-        <img src={staticPath.frourio_svg} height={36} alt="frourio logo" />
+        <Link className={styles.headerIcon} href={'/'}>
+          <Image src={staticPath.othello_header_png} height={40} width={160} alt="othello logo" />
+        </Link>
 
         <div className={styles.userBtn} onClick={onLogout}>
           {user.photoURL ? (

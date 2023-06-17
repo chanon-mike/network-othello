@@ -18,7 +18,8 @@
 .title {
   font-size: 80px;
   font-weight: bold;
-  text-shadow: 1px 1px white;
+  text-shadow: 1px 1px 5px #314a52;
+  color: #0c907d;
 }
 
 .btn {
@@ -30,11 +31,11 @@
   font-size: 14px;
   color: white;
   font-weight: bold;
-  background: #222;
+  background: #0c907d;
   cursor: pointer;
   transition: 0.2s background;
 }
 
 .btn:hover {
-  background: #444;
+  background: #314a52;
 }

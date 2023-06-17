@@ -13,6 +13,7 @@
   width: 75%;
   height: 50%;
   padding: 10px;
+  font-family: 'Ubuntu';
 }
 
 .wrapper button {
@@ -20,7 +21,8 @@
   height: 50%;
   border: 0;
   cursor: pointer;
-  background-color: #165635;
+  background-color: #0c907d;
   color: #fff;
   border-radius: 0.2em;
+  font-family: 'Ubuntu';
 }
