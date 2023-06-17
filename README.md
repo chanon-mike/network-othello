@@ -1,16 +1,32 @@
-# network-othello
+# Online Othello
+
+Welcome to the Online Othello project! This is a web-based implementation of the classic board game Othello, also known as Reversi. You can play Othello against other players online, create lobby, and spectate other games.
+
+## Features
+
+- Real-time gameplay
+- Multiple game lobby
+- Spectating
+
+### Update plans (Maybe?)
+
+- [] Spectating UI
+- [] Chat functionality
+- [] User profiles
 
 ### Bugs and problems found
 
-- [x] User cannot create new lobby when they already create or play in other lobby (room)
-- [ ] Make 3rd player cannot join the lobby (currently 3rd plyaer onward will be white color and game may crash)
-- [x] NO MORE MOVES modal should only appear when player turn is current turn (If current turn === user turn as condition, player will see a modal glimpsy each turn which is very bad for ui & ux)
+- [x] User cannot create new lobby when they already create or play in other lobby
+- [x] Make 3rd player cannot join the lobby => Spectatable now
+- [x] NO MORE MOVES modal should only appear when player turn is current turn (Remove)
 - [x] When white end the game, the game restart with white as a first turn.
 - [x] When one player in the game, they can move (should make it so that the modal wait for another player appear)
 - [ ] Refresh page result in player remove from lobby. They need to go back to lobby page and join the room by themselves
 - [ ] Changing route by typing in the address bar will not show the confirm modal
 
-## Settings
+<hr>
+
+## 設定
 
 フロントエンドは src ディレクトリの [Next.js](https://nextjs.org/) 、バックエンドは server ディレクトリの [frourio](https://frourio.com/) で構築された TypeScript で一気通貫開発が可能なモノレポサービス
 
