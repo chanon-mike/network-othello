@@ -1,7 +1,6 @@
 import type { BoardModel } from '$/commonTypesWithClient/models';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
-import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { Loading } from 'src/components/Loading/Loading';
 import { apiClient } from 'src/utils/apiClient';
@@ -16,12 +15,8 @@ export type ExtendedBoardModel = BoardModel & { playerNum: number };
 const Home = () => {
   const [user] = useAtom(userAtom);
   const [lobby, setLobby] = useState<ExtendedBoardModel[] | undefined>(undefined);
-  const [lobbyName, setLobbyName] = useState<string>('');
+
   const router = useRouter();
-  // Handle on change of lobby name
-  const inputLobbyName = (e: ChangeEvent<HTMLInputElement>) => {
-    setLobbyName(e.target.value);
-  };
 
   const fetchLobby = async () => {
     // Fetch all lobby and find player in each lobby, then calculate current playerNum in each lobby
@@ -36,24 +31,6 @@ const Home = () => {
       const allLobbies = await Promise.all(lobbyPromises);
       setLobby(allLobbies);
     }
-  };
-
-  const createLobby = async (e: FormEvent) => {
-    // Create a new lobby, create a new player from current user and add to new lobby
-    e.preventDefault();
-    if (!lobbyName) return;
-
-    const boardResponse = await apiClient.board.$post({ body: { lobbyName } });
-    const playerResponse = await apiClient.player._lobbyId(boardResponse.id).$post();
-    const fetchLobbyPromise = fetchLobby();
-
-    await Promise.allSettled([boardResponse, playerResponse, fetchLobbyPromise]);
-    setLobbyName('');
-    router.push(`othello/${boardResponse.id}`);
-  };
-
-  const joinLobby = async (lobbyId: string) => {
-    await apiClient.player._lobbyId(lobbyId).$post();
   };
 
   useEffect(() => {
@@ -72,13 +49,9 @@ const Home = () => {
     <>
       <BasicHeader user={user} />
       <div className={styles.container}>
-        <CreateLobby
-          lobbyName={lobbyName}
-          inputLobbyName={inputLobbyName}
-          createLobby={createLobby}
-        />
+        <CreateLobby router={router} />
         <div className={styles.title}>Welcome {user.displayName} to Online Othello</div>
-        <LobbyList lobby={lobby} onClick={joinLobby} />
+        <LobbyList lobby={lobby} />
       </div>
     </>
   );

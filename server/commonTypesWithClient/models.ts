@@ -23,7 +23,6 @@ export type BoardModel = {
   status: 'waiting' | 'playing' | 'ended';
   currentTurnUserId: UserId;
   created: number;
-  createdBy: UserId;
 };
 
 export type PlayerModel = {

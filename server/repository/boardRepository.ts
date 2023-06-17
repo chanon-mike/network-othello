@@ -24,7 +24,6 @@ const toModel = (prismaBoard: Board): BoardModel => ({
   status: z.enum(['waiting', 'playing', 'ended']).parse(prismaBoard.status),
   currentTurnUserId: UserIdParser.parse(prismaBoard.currentTurnUserId),
   created: prismaBoard.createdAt.getTime(),
-  createdBy: UserIdParser.parse(prismaBoard.createdByUserId),
 });
 
 export const boardRepository = {
@@ -45,7 +44,6 @@ export const boardRepository = {
         status: board.status,
         currentTurnUserId: board.currentTurnUserId,
         createdAt: new Date(board.created),
-        createdByUserId: board.createdBy,
       },
     });
   },

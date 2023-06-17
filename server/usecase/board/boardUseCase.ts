@@ -40,7 +40,6 @@ export const boardUseCase = {
       status: 'waiting',
       currentTurnUserId: userId,
       created: Date.now(),
-      createdBy: userId,
     };
     // Right now when create board, current user need to be pass, so maybe create board before player
     await boardRepository.save(newBoard);
@@ -77,7 +76,6 @@ export const boardUseCase = {
         status: 'playing',
         currentTurnUserId,
         created: prismaBoard.created,
-        createdBy: prismaBoard.createdBy,
       };
       await boardRepository.save(newBoard);
 
@@ -144,15 +142,12 @@ export const boardUseCase = {
       status: gameStatus,
       currentTurnUserId: prismaBoard.currentTurnUserId,
       created: prismaBoard.created,
-      createdBy: prismaBoard.createdBy,
     };
     await boardRepository.save(newBoard);
   },
   resetBoard: async (lobbyId: string): Promise<void> => {
     const thisBoard = await boardRepository.getCurrent(lobbyId);
     const playerList = await playerRepository.getAllInLobby(lobbyId);
-
-    console.log(playerList);
 
     // Reset board, latest move and current player turn
     if (playerList.length > 0) {
@@ -164,7 +159,6 @@ export const boardUseCase = {
       } else if (playerList[1]) {
         startTurnUserId = playerList[1].userId;
       }
-
       const newBoard: BoardModel = {
         id: thisBoard.id,
         lobbyName: thisBoard.lobbyName,
@@ -173,7 +167,6 @@ export const boardUseCase = {
         status: 'waiting',
         currentTurnUserId: startTurnUserId,
         created: Date.now(),
-        createdBy: startTurnUserId,
       };
       await boardRepository.save(newBoard);
       playerUseCase.setScore(lobbyId);

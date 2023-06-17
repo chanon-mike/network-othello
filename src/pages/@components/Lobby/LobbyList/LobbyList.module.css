@@ -15,3 +15,11 @@
   font-size: 1.3rem;
   color: #000;
 }
+
+.lobbyName {
+  flex: 1;
+}
+
+.icon {
+  margin: 0 1rem;
+}
