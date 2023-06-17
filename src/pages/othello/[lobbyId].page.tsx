@@ -96,8 +96,13 @@ const Home = () => {
       await apiClient.player._lobbyId(lobbyIdRef.current).$delete();
       await apiClient.board._lobbyId(lobbyIdRef.current).restart.$put();
     };
+
+    window.addEventListener('beforeunload', handleRouteChange);
     router.events.on('routeChangeStart', handleRouteChange);
-    return () => router.events.off('routeChangeStart', handleRouteChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleRouteChange);
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
   }, [router.events]);
 
   if (!board || !user) return <Loading visible />;

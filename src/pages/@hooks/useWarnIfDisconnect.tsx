@@ -4,6 +4,11 @@ import { useEffect } from 'react';
 export const useWarnIfDisconnect = (isDisconnected = true) => {
   useEffect(() => {
     if (isDisconnected) {
+      const confirmExit = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = 'Do you really want to leave the game?';
+      };
+
       const routeChangeStart = () => {
         const ok = confirm('Do you really want to leave the game?');
         if (!ok) {
@@ -11,9 +16,11 @@ export const useWarnIfDisconnect = (isDisconnected = true) => {
           throw 'Abort route change. Please ignore this error.';
         }
       };
-      Router.events.on('routeChangeStart', routeChangeStart);
 
+      window.addEventListener('beforeunload', confirmExit);
+      Router.events.on('routeChangeStart', routeChangeStart);
       return () => {
+        window.removeEventListener('beforeunload', confirmExit);
         Router.events.off('routeChangeStart', routeChangeStart);
       };
     }
