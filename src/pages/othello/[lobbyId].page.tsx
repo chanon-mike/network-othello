@@ -83,7 +83,7 @@ const Home = () => {
     const cancelId = setInterval(() => {
       fetchBoard();
       fetchScore();
-    }, 500);
+    }, 200);
     return () => clearInterval(cancelId);
   }, []);
 
@@ -96,12 +96,8 @@ const Home = () => {
       await apiClient.player._lobbyId(lobbyIdRef.current).$delete();
       await apiClient.board._lobbyId(lobbyIdRef.current).restart.$put();
     };
-
     router.events.on('routeChangeStart', handleRouteChange);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
-    };
+    return () => router.events.off('routeChangeStart', handleRouteChange);
   }, [router.events]);
 
   if (!board || !user) return <Loading visible />;

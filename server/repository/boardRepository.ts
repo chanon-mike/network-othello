@@ -24,6 +24,7 @@ const toModel = (prismaBoard: Board): BoardModel => ({
   status: z.enum(['waiting', 'playing', 'ended']).parse(prismaBoard.status),
   currentTurnUserId: UserIdParser.parse(prismaBoard.currentTurnUserId),
   created: prismaBoard.createdAt.getTime(),
+  createdBy: UserIdParser.parse(prismaBoard.createdByUserId),
 });
 
 export const boardRepository = {
@@ -44,6 +45,7 @@ export const boardRepository = {
         status: board.status,
         currentTurnUserId: board.currentTurnUserId,
         createdAt: new Date(board.created),
+        createdByUserId: board.createdBy,
       },
     });
   },
@@ -62,5 +64,10 @@ export const boardRepository = {
     });
     if (!board) throw new Error("Board doesn't exist");
     return toModel(board);
+  },
+  delete: async (lobbyId: string): Promise<void> => {
+    await prismaClient.board.delete({
+      where: { id: lobbyId },
+    });
   },
 };

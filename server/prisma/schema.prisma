@@ -23,6 +23,7 @@ model Board {
   currentTurnUserId String
   playerList        Player[]
   createdAt         DateTime @default(now())
+  createdByUserId   String
 }
 
 model Player {

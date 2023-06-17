@@ -40,6 +40,7 @@ export const boardUseCase = {
       status: 'waiting',
       currentTurnUserId: userId,
       created: Date.now(),
+      createdBy: userId,
     };
     // Right now when create board, current user need to be pass, so maybe create board before player
     await boardRepository.save(newBoard);
@@ -76,6 +77,7 @@ export const boardUseCase = {
         status: 'playing',
         currentTurnUserId,
         created: prismaBoard.created,
+        createdBy: prismaBoard.createdBy,
       };
       await boardRepository.save(newBoard);
 
@@ -142,6 +144,7 @@ export const boardUseCase = {
       status: gameStatus,
       currentTurnUserId: prismaBoard.currentTurnUserId,
       created: prismaBoard.created,
+      createdBy: prismaBoard.createdBy,
     };
     await boardRepository.save(newBoard);
   },
@@ -149,8 +152,10 @@ export const boardUseCase = {
     const thisBoard = await boardRepository.getCurrent(lobbyId);
     const playerList = await playerRepository.getAllInLobby(lobbyId);
 
+    console.log(playerList);
+
     // Reset board, latest move and current player turn
-    if (playerList) {
+    if (playerList.length > 0) {
       // Get userId of black in the last game, if not exist, get player who was white and set color to black
       let startTurnUserId: UserId = playerList[0].userId;
 
@@ -168,9 +173,13 @@ export const boardUseCase = {
         status: 'waiting',
         currentTurnUserId: startTurnUserId,
         created: Date.now(),
+        createdBy: startTurnUserId,
       };
       await boardRepository.save(newBoard);
       playerUseCase.setScore(lobbyId);
+    } else {
+      // If no player left, remove board
+      await boardRepository.delete(lobbyId);
     }
   },
 };

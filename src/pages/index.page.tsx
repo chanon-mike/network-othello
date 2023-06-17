@@ -1,5 +1,6 @@
 import type { BoardModel } from '$/commonTypesWithClient/models';
 import { useAtom } from 'jotai';
+import { useRouter } from 'next/router';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { Loading } from 'src/components/Loading/Loading';
@@ -16,6 +17,7 @@ const Home = () => {
   const [user] = useAtom(userAtom);
   const [lobby, setLobby] = useState<ExtendedBoardModel[] | undefined>(undefined);
   const [lobbyName, setLobbyName] = useState<string>('');
+  const router = useRouter();
   // Handle on change of lobby name
   const inputLobbyName = (e: ChangeEvent<HTMLInputElement>) => {
     setLobbyName(e.target.value);
@@ -47,6 +49,7 @@ const Home = () => {
 
     await Promise.allSettled([boardResponse, playerResponse, fetchLobbyPromise]);
     setLobbyName('');
+    router.push(`othello/${boardResponse.id}`);
   };
 
   const joinLobby = async (lobbyId: string) => {
@@ -56,6 +59,12 @@ const Home = () => {
   useEffect(() => {
     fetchLobby();
   }, []);
+
+  useEffect(() => {
+    // Fetch lobby when route change
+    router.events.on('routeChangeComplete', fetchLobby);
+    return () => router.events.off('routeChangeComplete', fetchLobby);
+  }, [router]);
 
   if (!user) return <Loading visible />;
 
@@ -68,7 +77,7 @@ const Home = () => {
           inputLobbyName={inputLobbyName}
           createLobby={createLobby}
         />
-        <div className={styles.title}>Go to othello game</div>
+        <div className={styles.title}>Welcome {user.displayName} to Online Othello</div>
         <LobbyList lobby={lobby} onClick={joinLobby} />
       </div>
     </>
