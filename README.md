@@ -1,6 +1,6 @@
 # Online Othello
 
-Welcome to the Online Othello project! This is a web-based implementation of the classic board game Othello, also known as Reversi. You can play Othello against other players online, create lobby, and spectate other games.
+Welcome to the Online Othello project! This is a web-based implementation of the classic board game Othello, also known as Reversi. You can play Othello against other players online, create a lobby, and spectate other games.
 
 ![image](https://github.com/chanon-mike/online-othello/assets/27944646/391b5ae3-6a0e-4c35-98b4-2e949925f48d)
 
@@ -8,7 +8,7 @@ Welcome to the Online Othello project! This is a web-based implementation of the
 ## Features
 
 - Real-time gameplay
-- Multiple game lobby
+- Multiple-game lobby
 - Spectating
 
 ### Update plans (Maybe?)
@@ -19,12 +19,12 @@ Welcome to the Online Othello project! This is a web-based implementation of the
 
 ### Bugs and problems found
 
-- [x] User cannot create new lobby when they already create or play in other lobby
+- [x] Users cannot create a new lobby when they already create one or play in another lobby
 - [x] Make 3rd player cannot join the lobby => Spectatable now
-- [x] NO MORE MOVES modal should only appear when player turn is current turn (Remove)
-- [x] When white end the game, the game restart with white as a first turn.
-- [x] When one player in the game, they can move (should make it so that the modal wait for another player appear)
-- [ ] Refresh page result in player remove from lobby. They need to go back to lobby page and join the room by themselves
+- [x] NO MORE MOVES modal should only appear when a player turn is a current turn (Remove)
+- [x] When white end the game, the game restarts with white as a first turn.
+- [x] When one player is in the game, they can move (should make it so that the modal wait for another player appear)
+- [ ] Refresh page results in the player remove from the lobby. They need to go back to the lobby page and join the room by themselves
 - [ ] Changing route by typing in the address bar will not show the confirm modal
 
 <hr>
