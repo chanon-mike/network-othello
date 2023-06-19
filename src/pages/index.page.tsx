@@ -50,7 +50,7 @@ const Home = () => {
       <BasicHeader user={user} />
       <div className={styles.container}>
         <CreateLobby router={router} />
-        <div className={styles.title}>Welcome to Online Othello!!</div>
+        <div className={styles.title}>Welcome to Online Othello!</div>
         <LobbyList lobby={lobby} />
       </div>
     </>

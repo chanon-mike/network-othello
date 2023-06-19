@@ -1,3 +1,4 @@
+import { GithubIcon } from 'src/components/icons/GithubIcon';
 import { staticPath } from 'src/utils/$path';
 import { loginWithGitHub } from 'src/utils/login';
 import { useLoading } from '../@hooks/useLoading';
@@ -20,8 +21,8 @@ const Login = () => {
         <div className={styles.title}>Online Othello</div>
         <div style={{ marginTop: '16px' }} onClick={login}>
           <div className={styles.btn}>
-            {/* <GithubIcon size={18} fill="#fff" /> */}
-            <span>Login</span>
+            <GithubIcon size={18} fill="#fff" />
+            <span>Login with GitHub</span>
           </div>
         </div>
       </div>
