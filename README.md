@@ -1,8 +1,8 @@
 # Online Othello
 
-Welcome to the Online Othello project! This is a web-based implementation of the classic board game Othello, also known as Reversi. You can play Othello against other players online, create a lobby, and spectate other games.
+Welcome to the Online Othello project! This is a web-based implementation of the classic board game Othello, also known as Reversi. You can play Othello against other players online, create a lobby, and watch other games.
 
-![image](https://github.com/chanon-mike/online-othello/assets/27944646/391b5ae3-6a0e-4c35-98b4-2e949925f48d)
+![online othello](https://github.com/chanon-mike/online-othello/assets/27944646/391b5ae3-6a0e-4c35-98b4-2e949925f48d)
 
 
 ## Features
