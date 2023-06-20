@@ -83,7 +83,7 @@ const Home = () => {
     const cancelId = setInterval(() => {
       fetchBoard();
       fetchScore();
-    }, 200);
+    }, 1000);
     return () => clearInterval(cancelId);
   }, []);
 
