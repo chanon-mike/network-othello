@@ -13,4 +13,7 @@ export type Methods = {
       board: BoardModel;
     };
   };
+  delete: {
+    status: 204;
+  };
 };

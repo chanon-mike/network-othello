@@ -11,4 +11,8 @@ export default defineController(() => ({
     status: 200,
     body: { board: await boardUseCase.clickBoard(lobbyId, body, user.id) },
   }),
+  delete: async ({ params: { lobbyId } }) => {
+    await boardRepository.delete(lobbyId);
+    return { status: 204 };
+  },
 }));

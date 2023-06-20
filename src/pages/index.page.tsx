@@ -1,4 +1,4 @@
-import type { BoardModel } from '$/commonTypesWithClient/models';
+import type { BoardModel, PlayerModel } from '$/commonTypesWithClient/models';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -10,7 +10,7 @@ import CreateLobby from './@components/Lobby/CreateLobby/CreateLobby';
 import { LobbyList } from './@components/Lobby/LobbyList/LobbyList';
 import styles from './index.module.css';
 
-export type ExtendedBoardModel = BoardModel & { playerNum: number };
+export type ExtendedBoardModel = BoardModel & { playerList: PlayerModel[] };
 
 const Home = () => {
   const [user] = useAtom(userAtom);
@@ -26,10 +26,24 @@ const Home = () => {
       // Use Promise.all to resolve when all promises in array have resolved
       const lobbyPromises = lobbyResponse.map(async (lb) => {
         const playerResponse = await apiClient.player._lobbyId(lb.id).$get();
-        return { ...lb, playerNum: playerResponse.player.length };
+        return { ...lb, playerList: playerResponse.player };
       });
       const allLobbies = await Promise.all(lobbyPromises);
       setLobby(allLobbies);
+    }
+  };
+
+  const deleteLobby = async (lobbyId: string): Promise<void> => {
+    // Delete lobby from outside the room (if there are still a player, remove only yourself)
+    const ok = confirm('Do you really want to leave the game?');
+    if (ok) {
+      if (lobby?.some((lb) => lb.id === lobbyId && lb.playerList.length === 1)) {
+        await apiClient.player._lobbyId(lobbyId).$delete();
+        await apiClient.board._lobbyId(lobbyId).$delete();
+        fetchLobby();
+      } else {
+        alert('Cannot delete lobby. There are still player left in the lobby');
+      }
     }
   };
 
@@ -51,7 +65,7 @@ const Home = () => {
       <div className={styles.container}>
         <CreateLobby router={router} />
         <div className={styles.title}>Welcome to Online Othello!</div>
-        <LobbyList lobby={lobby} />
+        <LobbyList lobby={lobby} user={user} deleteLobby={deleteLobby} />
       </div>
     </>
   );

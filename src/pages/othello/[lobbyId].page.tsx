@@ -92,9 +92,10 @@ const Home = () => {
   // Delete current player from board if disconnected, set game to end and reset a game
   useEffect(() => {
     const handleRouteChange = async () => {
-      // Delete player and reset board
+      // Delete player and reset board (Delete board automatically if no player left)
       await apiClient.player._lobbyId(lobbyIdRef.current).$delete();
       await apiClient.board._lobbyId(lobbyIdRef.current).restart.$put();
+      await apiClient.board._lobbyId(lobbyIdRef.current).$delete();
     };
 
     window.addEventListener('beforeunload', handleRouteChange);

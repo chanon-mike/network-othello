@@ -1,5 +1,5 @@
 .room {
-  width: 50%;
+  width: 40%;
   min-height: 4rem;
   padding: 10px;
   margin: 10px;
@@ -11,15 +11,58 @@
   background-color: #fff;
 }
 
-.room h3 {
+.room:hover {
+  background: #eee;
+}
+
+.room .lobbyLinkWrapper {
+  position: relative;
+  display: flexbox;
+  padding-right: 70%;
+}
+
+.room .lobbyLinkWrapper h3 {
   font-size: 1.3rem;
   color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
 }
 
-.lobbyName {
-  flex: 1;
+.deleteIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  cursor: pointer;
+
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.2rem;
 }
 
-.icon {
-  margin: 0 1rem;
+.deleteIcon:hover {
+  background-color: #aaa;
+}
+
+@media all and (width < 700px) {
+  .room h3 {
+    max-width: 150px;
+  }
+
+  .room .lobbyLinkWrapper {
+    padding-right: 50%;
+  }
+}
+
+@media all and (width < 500px) {
+  .room h3 {
+    max-width: 75px;
+  }
+
+  .room .lobbyLinkWrapper {
+    padding-right: 20%;
+  }
 }

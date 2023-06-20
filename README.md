@@ -25,6 +25,7 @@ Access through this url: https://online-othello-frontend.onrender.com/
 - [x] NO MORE MOVES modal should only appear when a player turn is a current turn (Remove)
 - [x] When white end the game, the game restarts with white as a first turn.
 - [x] When one player is in the game, they can move (should make it so that the modal wait for another player appear)
+- [ ] In deployed website, lobby is not deleted after player become 0 and sometimes player is not delete when they left
 - [ ] Spectator sees turn order as "Your turn" or "Opponent turn" (Should display as a player name instead)
 - [ ] Refresh page results in the player remove from the lobby. They need to go back to the lobby page and join the room by themselves
 - [ ] Changing route by typing in the address bar will not show the confirm modal
@@ -110,21 +111,23 @@ Web ブラウザで http://localhost:3000 を開く
 
 ## デプロイ
 
-フロントエンド・バックエンド・dbは[render](https://dashboard.render.com/)でデプロイした
+フロントエンド・バックエンド・db は[render](https://dashboard.render.com/)でデプロイした
 
 ### Firebase
 
-[Firebase](https://console.firebase.google.com/u/0/)のAPIと連携は下記のように設定
+[Firebase](https://console.firebase.google.com/u/0/)の API と連携は下記のように設定
+
 1. プロジェクトを作成
 2. プロジェクト設定に行く
-3. アプリを追加（Web App）して、firebaseConfigを環境変数NEXT_PUBLIC_FIREBASE_CONFIGに追加
-4. サービスアカウントのFirebase Admin SDKからプライベートキーをダウンロードし、環境変数FIREBASE_SERVER_KEYに追加
+3. アプリを追加（Web App）して、firebaseConfig を環境変数 NEXT_PUBLIC_FIREBASE_CONFIG に追加
+4. サービスアカウントの Firebase Admin SDK からプライベートキーをダウンロードし、環境変数 FIREBASE_SERVER_KEY に追加
 
 ### Render
 
-PostgreSQLのdbを作成して、Web Serviceでバックエンドをデプロイし、Static siteでフロントエンドをデプロイした
+PostgreSQL の db を作成して、Web Service でバックエンドをデプロイし、Static site でフロントエンドをデプロイした
 
 環境変数は下記のように設定
+
 ```
 API_DATABASE_URL=PostgreSQLデータベースのURL
 API_BASE_PATH=/api
@@ -135,18 +138,21 @@ NEXT_PUBLIC_FIREBASE_CONFIG=firebaseConfigの値
 ```
 
 #### ビルドコマンド
+
 ```
 $ npm i; npm i --prefix server; npm run build:client; npm run build:server
 ```
 
 #### スタートコマンド
+
 フロントエンド
+
 ```
 $ out/
 ```
 
 バックエンド
+
 ```
 $ npm start --prefix server
 ```
-
