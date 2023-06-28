@@ -2,6 +2,10 @@
 
 Welcome to the Online Othello project! This is a web-based implementation of the classic board game Othello, also known as Reversi. You can play Othello against other players online, create a lobby, and watch other games.
 
+⚠️ **Caution! Due to the free-plan of Render (and ofc my code). The lag is so high that is impossible to play** ⚠️ 
+
+⚠️ **注意! Renderの無料契約（と僕のコード）により、サーバーがとても重く、プレイするのが難しい** ⚠️ 
+
 Access through this url: https://online-othello-frontend.onrender.com/
 
 ![online othello](https://github.com/chanon-mike/online-othello/assets/27944646/2d40787b-1f4b-40d0-9979-ffbaa66d0ec0)
