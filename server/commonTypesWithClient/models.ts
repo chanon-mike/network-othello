@@ -1,18 +1,11 @@
 import type { BoardArray, Pos } from '$/repository/boardRepository';
-import type { LobbyId, TaskId, UserId } from './branded';
+import type { LobbyId, UserId } from './branded';
 
 export type UserModel = {
   id: UserId;
   email: string;
   displayName: string | undefined;
   photoURL: string | undefined;
-};
-
-export type TaskModel = {
-  id: TaskId;
-  label: string;
-  done: boolean;
-  created: number;
 };
 
 export type BoardModel = {

@@ -7,13 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Task {
-  id        String   @id
-  label     String
-  done      Boolean
-  createdAt DateTime
-}
-
 model Board {
   id                String   @id
   lobbyName         String?
